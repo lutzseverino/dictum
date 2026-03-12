@@ -29,6 +29,7 @@ Dictum will enforce these backend boundaries:
 - Controllers accept and return DTOs only.
 - Public service methods return DTOs, not entities.
 - Entities remain internal to persistence and service implementation details.
+- Services are grouped by resource first, then split into query and command responsibilities as needed.
 - Read flows prefer projections or read models mapped to DTOs.
 - Query services use `getResponse(...)` for singular reads and `listResponses(...)` for collection reads.
 - Command services use explicit verbs for mutations.
@@ -40,6 +41,7 @@ Dictum will enforce these backend boundaries:
 - Controller classes stay easy to scan and document.
 - Service APIs become predictable across resources.
 - Query and command paths are clearer than a generic CRUD abstraction.
+- The service layer avoids both a giant catch-all resource service and a one-class-per-action explosion.
 - The project accepts extra mapper and DTO boilerplate in exchange for stronger boundaries.
 
 ## Alternatives Considered
@@ -48,4 +50,5 @@ Dictum will enforce these backend boundaries:
   Rejected because it weakens the API boundary and couples external behavior to persistence structure.
 - Use a generic CRUD service abstraction with uniform endpoint methods
   Rejected because it hides intent and makes non-trivial endpoint behavior harder to express cleanly.
-
+- Create one top-level service class per resource action
+  Rejected as the default because it fragments the service layer too early and makes endpoint flows harder to scan at the current scale.
