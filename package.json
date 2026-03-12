@@ -1,0 +1,17 @@
+{
+  "name": "dictum",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "dev:site": "pnpm --dir apps/site dev",
+    "dev:admin": "pnpm --dir apps/admin dev",
+    "dev:api": "./services/api/mvnw -f services/api/pom.xml spring-boot:run",
+    "build:web": "pnpm --filter @dictum/site build && pnpm --filter @dictum/admin build",
+    "lint:web": "pnpm exec biome check apps packages",
+    "format:web": "pnpm exec biome format --write apps packages",
+    "typecheck:web": "pnpm --filter @dictum/site typecheck && pnpm --filter @dictum/admin typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11"
+  }
+}
