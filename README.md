@@ -1,6 +1,12 @@
-# Dictum
-
-Dictum is a hybrid blog platform skeleton: a Spring Boot control plane, a Next.js public site, and a separate Next.js admin app designed for phone-first management.
+<div align="center">
+    <h1 align="center">Dictum</h1>
+    <p>A hybrid blog platform skeleton with a Spring Boot control plane, a Next.js public site, and a separate phone-first admin app.</p>
+    <p>
+        <img alt="status" src="https://img.shields.io/badge/status-skeleton-0f172a">
+        <img alt="frontend" src="https://img.shields.io/badge/frontend-next.js-111827">
+        <img alt="backend" src="https://img.shields.io/badge/backend-spring_boot-1f2937">
+    </p>
+</div>
 
 ## Workspace
 
@@ -9,6 +15,22 @@ Dictum is a hybrid blog platform skeleton: a Spring Boot control plane, a Next.j
 - `services/api` owns API contracts, orchestration boundaries, and future auth/provider integrations.
 - `packages/rendering` defines the markdown/content contracts.
 - `packages/site-kit` holds reusable React primitives for the public site.
+
+## Repository Layout
+
+```text
+dictum/
+  apps/
+    site/
+    admin/
+  packages/
+    rendering/
+    site-kit/
+  services/
+    api/
+  docs/
+    content-repository-contract.md
+```
 
 ## Getting Started
 
