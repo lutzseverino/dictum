@@ -18,10 +18,10 @@ Preserve durable decisions, tradeoffs, and rejected alternatives so future contr
 ## Documents
 
 - [0001: Adopt Diataxis, MADR, and OpenAPI for project documentation](./0001-adopt-diataxis-madr-openapi.md)
+- [0002: Keep entities inside service boundaries](./0002-keep-entities-inside-service-boundaries.md)
 
 ## Scope Boundaries
 
 - Decision records capture why an option was chosen.
 - Active factual material belongs in [Reference](../reference/README.md).
 - Broader conceptual background belongs in [Explanation](../explanation/README.md).
-
