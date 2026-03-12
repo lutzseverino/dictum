@@ -17,11 +17,10 @@ Store conceptual and architecture-facing documentation that helps contributors u
 
 ## Documents
 
-No explanation documents exist yet.
+- [Backend Layering and Service Boundaries](./backend-layering-and-service-boundaries.md)
 
 ## Scope Boundaries
 
 - Explanation documents answer why and how the system is organized.
 - Reference material belongs in [Reference](../reference/README.md).
 - Historical rationale that should be preserved as a choice belongs in [Decision Records](../decisions/README.md).
-
