@@ -41,6 +41,25 @@ Services act as the gate for each endpoint.
 
 Dictum prefers explicit query and command responsibilities over a generic shared CRUD service abstraction.
 
+### Service Ownership
+
+Services are grouped by resource first, then by query versus command responsibility.
+
+- Start with one query service and one command service per resource when both are needed.
+- Do not create a separate top-level service for every endpoint action by default.
+- Do not keep all behavior in one catch-all resource service when query and command responsibilities are already distinct.
+
+Preferred shapes:
+
+- `PostQueryService`
+- `PostCommandService`
+- `SiteSettingsQueryService`
+- `SiteSettingsCommandService`
+
+This keeps resource ownership obvious while still separating read and write concerns.
+
+Action-specific collaborators should be extracted only when complexity earns them. When that happens, prefer local helper or local module extraction before introducing more public top-level service types.
+
 ### Query Services
 
 Query services serve read endpoints.
@@ -49,6 +68,7 @@ Query services serve read endpoints.
 - Use `listResponses(...)` for collection reads.
 - Query services return response DTOs, not entities.
 - Query services should prefer projections or dedicated read models when reading from persistence.
+- Query services should be resource-scoped rather than action-scoped.
 
 Examples:
 
@@ -63,6 +83,7 @@ Command services serve mutation endpoints.
 - Use explicit verbs for mutations such as `publish(...)`, `updateSettings(...)`, or `enqueueProviderJob(...)`.
 - Command services may load and mutate entities internally.
 - Command services still return response DTOs at their public boundary.
+- Command services should be resource-scoped rather than split into one top-level class per action unless the command surface later becomes materially mixed.
 
 ### Entities, Projections, and DTOs
 
@@ -91,5 +112,5 @@ The mapping layer is allowed to know about entities and projections, but control
 - Persistence models can evolve without directly breaking API contracts.
 - Read paths gain a natural home for projections and read models.
 - Naming stays consistent across services through `getResponse(...)` and `listResponses(...)`.
+- Resource ownership stays clear without exploding the number of top-level service classes.
 - Some contributors may find the boundary stricter than a typical Spring CRUD stack, but the tradeoff is deliberate.
-
