@@ -1,14 +1,22 @@
 <div align="center">
     <h1 align="center">Dictum</h1>
-    <p>A hybrid blog platform skeleton with a Spring Boot control plane, a Next.js public site, and a separate phone-first admin app.</p>
+    <p>A hybrid blog platform monorepo with a Spring Boot control plane, a Next.js public site, and a separate phone-first admin app.</p>
     <p>
-        <img alt="status" src="https://img.shields.io/badge/status-skeleton-0f172a">
+        <img alt="status" src="https://img.shields.io/badge/status-foundation-0f172a">
         <img alt="frontend" src="https://img.shields.io/badge/frontend-next.js-111827">
         <img alt="backend" src="https://img.shields.io/badge/backend-spring_boot-1f2937">
     </p>
 </div>
 
-## Workspace
+## Overview
+
+Dictum is a modular blog platform intended to support a markdown-first public site, a phone-friendly admin experience, and a backend control plane that can later orchestrate content mutations, settings changes, and provider-assisted workflows.
+
+The repository currently establishes the platform architecture and development foundations rather than a full end-user product.
+
+Project documentation follows Diataxis for structure, MADR for decision records, and OpenAPI for HTTP contracts. Start in [docs/README.md](./docs/README.md).
+
+## Architecture
 
 - `apps/site` hosts the public blog shell.
 - `apps/admin` hosts the mobile-first admin shell.
@@ -29,10 +37,16 @@ dictum/
   services/
     api/
   docs/
-    content-repository-contract.md
+    README.md
+    tutorials/
+    how-to/
+    reference/
+    explanation/
+    decisions/
+    openapi/
 ```
 
-## Getting Started
+## Development
 
 1. Install frontend dependencies from the repo root with `pnpm install`.
 2. Run the public site with `pnpm dev:site`.
@@ -40,15 +54,22 @@ dictum/
 4. Run the API with `pnpm dev:api`.
 5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
 
-## Contracts
+## Content Model
 
 - The future content source of truth lives in a separate `dictum-content` repository.
 - Posts remain markdown-first.
 - Per-post styling is represented as optional plain CSS sidecars, not embedded Tailwind utilities in markdown.
 
-See `docs/content-repository-contract.md` for the expected content layout.
+See [docs/reference/content-repository-contract.md](./docs/reference/content-repository-contract.md) for the expected content layout.
 
 ## API Docs
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+## Current Scope
+
+- Establish the monorepo structure and module boundaries.
+- Provide placeholder public and admin apps.
+- Expose stub control-plane endpoints and OpenAPI docs.
+- Keep auth, live content writes, and provider integrations as explicit future boundaries.
