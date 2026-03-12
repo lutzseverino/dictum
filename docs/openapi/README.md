@@ -3,7 +3,7 @@ title: OpenAPI
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-12
+updated: 2026-03-13
 owner: Engineering
 doc-type: index
 summary: Define the location and purpose of machine-readable HTTP API contracts for Dictum.
@@ -17,12 +17,19 @@ Store machine-readable HTTP contract definitions for Dictum so API behavior can 
 
 ## Documents
 
-No OpenAPI documents exist yet.
-
-The next API contract slice should introduce `dictum.yaml` here.
+- [Dictum REST contract](./dictum.yaml)
 
 ## Scope Boundaries
 
 - This area is for OpenAPI contract files and closely related notes.
 - Human-readable explanations of API design belong in [Explanation](../explanation/README.md) or [Decision Records](../decisions/README.md).
+
+## Current Scope
+
+The first contract slice defines conventional REST endpoints for:
+
+- posts
+- site settings
+
+This slice intentionally does not standardize provider job resources or runtime auth implementation yet.
 
