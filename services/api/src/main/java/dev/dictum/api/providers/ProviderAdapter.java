@@ -4,10 +4,9 @@ import java.util.List;
 
 public interface ProviderAdapter {
 
-	String key();
+  String key();
 
-	String mode();
+  String mode();
 
-	List<String> supportedCommands();
+  List<String> supportedCommands();
 }
-
