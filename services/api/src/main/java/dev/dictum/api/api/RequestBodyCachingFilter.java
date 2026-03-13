@@ -12,7 +12,12 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 @Component
 public class RequestBodyCachingFilter extends OncePerRequestFilter {
 
-  private static final int REQUEST_CACHE_LIMIT = 1024 * 1024;
+  private static final int REQUEST_CACHE_LIMIT = Integer.MAX_VALUE;
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return !"PATCH".equalsIgnoreCase(request.getMethod());
+  }
 
   @Override
   protected void doFilterInternal(
@@ -23,8 +28,9 @@ public class RequestBodyCachingFilter extends OncePerRequestFilter {
       return;
     }
 
-    // PATCH updates can legitimately carry substantial markdown bodies, so the
-    // cached request document needs enough headroom for field-presence checks.
+    // PATCH updates can legitimately carry substantial markdown bodies. Until
+    // the API publishes an explicit payload-size contract, the cache must not
+    // impose a smaller hidden truncation limit than the endpoint itself.
     filterChain.doFilter(new ContentCachingRequestWrapper(request, REQUEST_CACHE_LIMIT), response);
   }
 }

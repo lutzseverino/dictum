@@ -76,6 +76,11 @@ public class PostCommandService {
       throw new InvalidPatchRequestException("Field tags cannot be null");
     }
 
+    if (mergePatchBodyAccessor.containsField("removeStylesheet")
+        && request.getRemoveStylesheet() == null) {
+      throw new InvalidPatchRequestException("Field removeStylesheet cannot be null");
+    }
+
     if (Boolean.TRUE.equals(request.getRemoveStylesheet())) {
       stylesheetPath = null;
     } else if (mergePatchBodyAccessor.containsField("stylesheet")) {

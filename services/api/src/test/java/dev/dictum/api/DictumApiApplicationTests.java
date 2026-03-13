@@ -269,6 +269,37 @@ class DictumApiApplicationTests {
   }
 
   @Test
+  void updatePostRejectsExplicitNullRemoveStylesheet() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "PATCH",
+            "/api/v1/posts/remote-controls-later",
+            MERGE_PATCH_JSON,
+            """
+            {
+              "removeStylesheet": null
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+  }
+
+  @Test
+  void updatePostAcceptsLargeMergePatchBodies() throws Exception {
+    String largeBody = "a".repeat(1_100_000);
+    String payload = "{\"body\":\"" + largeBody + "\"}";
+
+    HttpResponse<String> response =
+        request("PATCH", "/api/v1/posts/remote-controls-later", MERGE_PATCH_JSON, payload);
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"body\":\"");
+  }
+
+  @Test
   void publishPostTransitionsDraftToPublished() throws Exception {
     HttpResponse<String> response =
         request("POST", "/api/v1/posts/remote-controls-later/publish", null, null);
