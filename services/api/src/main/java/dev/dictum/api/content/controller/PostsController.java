@@ -1,5 +1,7 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.controller;
 
+import dev.dictum.api.content.service.PostCommandService;
+import dev.dictum.api.content.service.PostQueryService;
 import dev.dictum.api.generated.api.PostsApi;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;

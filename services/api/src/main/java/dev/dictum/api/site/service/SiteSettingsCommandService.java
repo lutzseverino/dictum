@@ -1,12 +1,16 @@
-package dev.dictum.api.settings;
+package dev.dictum.api.site.service;
 
-import dev.dictum.api.api.MergePatchBodyAccessor;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
+import dev.dictum.api.site.model.vo.SiteSettingsPatchFields;
+import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
+import dev.dictum.api.web.patch.MergePatchBodyAccessor;
+import dev.dictum.api.web.patch.MergePatchFieldRules;
 import org.springframework.stereotype.Service;
 
 @Service
-class SiteSettingsCommandService {
+public class SiteSettingsCommandService {
 
   private final InMemorySiteSettingsStore siteSettingsStore;
   private final SiteSettingsApiMapper siteSettingsApiMapper;
@@ -46,16 +50,10 @@ class SiteSettingsCommandService {
 
   private void validateUpdateRequest(
       UpdateSiteSettingsRequest request, SiteSettingsPatchFields patchFields) {
-    requireNonNullWhenPresent("title", patchFields.title(), request.getTitle());
-    requireNonNullWhenPresent("subtitle", patchFields.subtitle(), request.getSubtitle());
-    requireNonNullWhenPresent("motd", patchFields.motd(), request.getMotd());
+    MergePatchFieldRules.requireNonNullWhenPresent(
+        "title", patchFields.title(), request.getTitle());
+    MergePatchFieldRules.requireNonNullWhenPresent(
+        "subtitle", patchFields.subtitle(), request.getSubtitle());
+    MergePatchFieldRules.requireNonNullWhenPresent("motd", patchFields.motd(), request.getMotd());
   }
-
-  private void requireNonNullWhenPresent(String fieldName, boolean fieldPresent, Object value) {
-    if (fieldPresent && value == null) {
-      throw new InvalidPatchRequestException("Field " + fieldName + " cannot be null");
-    }
-  }
-
-  private record SiteSettingsPatchFields(boolean title, boolean subtitle, boolean motd) {}
 }

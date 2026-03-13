@@ -1,4 +1,4 @@
-package dev.dictum.api.api;
+package dev.dictum.api.web.patch;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

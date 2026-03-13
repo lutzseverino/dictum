@@ -1,5 +1,6 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.service;
 
+import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
 import java.util.List;

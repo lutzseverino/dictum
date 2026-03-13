@@ -1,4 +1,4 @@
-package dev.dictum.api.settings;
+package dev.dictum.api.web.error;
 
 public class InvalidPatchRequestException extends RuntimeException {
 

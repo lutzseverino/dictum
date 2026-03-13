@@ -1,4 +1,4 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.error;
 
 public class InvalidPostRequestException extends RuntimeException {
 

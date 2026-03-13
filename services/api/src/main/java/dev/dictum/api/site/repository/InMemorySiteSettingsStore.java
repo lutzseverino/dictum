@@ -1,9 +1,10 @@
-package dev.dictum.api.settings;
+package dev.dictum.api.site.repository;
 
+import dev.dictum.api.site.model.vo.SiteSettingsState;
 import org.springframework.stereotype.Component;
 
 @Component
-class InMemorySiteSettingsStore {
+public class InMemorySiteSettingsStore {
 
   private SiteSettingsState siteSettings =
       new SiteSettingsState(
@@ -11,11 +12,11 @@ class InMemorySiteSettingsStore {
           "A remotely steerable markdown blog kit.",
           "Foundation mode is live: boundaries first, resources next.");
 
-  synchronized SiteSettingsState get() {
+  public synchronized SiteSettingsState get() {
     return siteSettings;
   }
 
-  synchronized SiteSettingsState save(SiteSettingsState updated) {
+  public synchronized SiteSettingsState save(SiteSettingsState updated) {
     siteSettings = updated;
     return siteSettings;
   }
