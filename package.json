@@ -7,6 +7,9 @@
     "dev:admin": "pnpm --dir apps/admin dev",
     "dev:api": "./services/api/mvnw -f services/api/pom.xml spring-boot:run",
     "build:web": "pnpm --filter @dictum/site build && pnpm --filter @dictum/admin build",
+    "test:api": "./services/api/mvnw -f services/api/pom.xml test",
+    "lint:api": "./services/api/mvnw -f services/api/pom.xml validate spotless:check",
+    "format:api": "./services/api/mvnw -f services/api/pom.xml spotless:apply",
     "lint:web": "pnpm exec biome check apps packages",
     "format:web": "pnpm exec biome format --write apps packages",
     "typecheck:web": "pnpm --filter @dictum/site typecheck && pnpm --filter @dictum/admin typecheck"

@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Settings", description = "Stub site settings endpoints")
 public class SettingsController {
 
-	@GetMapping("/site")
-	@Operation(summary = "Get placeholder site settings")
-	public SiteSettingsResponse getSiteSettings() {
-		return new SiteSettingsResponse(
-			"Dictum",
-			"A remotely steerable markdown blog kit.",
-			"Skeleton mode is live: boundaries first, mutations later.",
-			"external-content-repository"
-		);
-	}
+  @GetMapping("/site")
+  @Operation(summary = "Get placeholder site settings")
+  public SiteSettingsResponse getSiteSettings() {
+    return new SiteSettingsResponse(
+        "Dictum",
+        "A remotely steerable markdown blog kit.",
+        "Skeleton mode is live: boundaries first, mutations later.",
+        "external-content-repository");
+  }
 }
-

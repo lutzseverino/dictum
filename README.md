@@ -53,6 +53,9 @@ dictum/
 3. Run the admin app with `pnpm dev:admin`.
 4. Run the API with `pnpm dev:api`.
 5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
+6. Check Java formatting and baseline requirements with `pnpm lint:api`.
+7. Apply Google Java Format to the API with `pnpm format:api`.
+8. Run API tests with `pnpm test:api`.
 
 ## Content Model
 

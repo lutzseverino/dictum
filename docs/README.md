@@ -3,7 +3,7 @@ title: Documentation
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-12
+updated: 2026-03-13
 owner: Engineering
 doc-type: index
 summary: Define the documentation structure for Dictum using Diataxis, MADR, and OpenAPI.
@@ -43,6 +43,7 @@ Dictum uses:
 - [Documentation Templates](./_templates/README.md)
 - [Tutorials](./tutorials/README.md)
 - [How-to Guides](./how-to/README.md)
+- [Run Java API Quality Checks](./how-to/run-java-api-quality-checks.md)
 - [Reference](./reference/README.md)
 - [Explanation](./explanation/README.md)
 - [Decision Records](./decisions/README.md)
@@ -55,4 +56,3 @@ Dictum uses:
 - Put content in the Diataxis area that matches the reader's need instead of the author's preference.
 - Use `docs/decisions/` only for durable decisions with meaningful tradeoffs.
 - Keep machine-readable HTTP contracts under `docs/openapi/`, even when they are also exposed by the running service.
-
