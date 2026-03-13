@@ -1,0 +1,500 @@
+openapi: 3.1.0
+info:
+  title: Dictum Control Plane API
+  version: 0.1.0
+  summary: Conventional REST contract for the first Dictum control-plane slice.
+  description: >
+    This contract defines the first reviewable HTTP surface for Dictum using
+    conventional REST resource design. It covers post management and site
+    settings without introducing provider workflows, runtime auth
+    implementation, or persistence-specific details.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+security:
+  - bearerAuth: []
+tags:
+  - name: Posts
+    description: Manage markdown-backed post resources.
+  - name: Site Settings
+    description: Manage site-level settings such as title, subtitle, and MOTD.
+paths:
+  /api/v1/posts:
+    get:
+      tags:
+        - Posts
+      operationId: listPosts
+      summary: List posts
+      description: Return post summaries for the control plane.
+      responses:
+        "200":
+          description: Post summaries returned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PostSummary"
+              examples:
+                default:
+                  value:
+                    - slug: dictum-begins
+                      title: Dictum Begins
+                      excerpt: A first seeded document proving the site reads through a content service.
+                      status: published
+                      template: essay
+                      publishedAt: "2026-03-12"
+                      tags:
+                        - architecture
+                        - skeleton
+                      hasStylesheet: true
+                    - slug: remote-controls-later
+                      title: Remote Controls, Later
+                      excerpt: The admin experience will later own publish and settings mutations.
+                      status: draft
+                      template: dispatch
+                      publishedAt: null
+                      tags:
+                        - admin
+                        - control-plane
+                      hasStylesheet: false
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+    post:
+      tags:
+        - Posts
+      operationId: createPost
+      summary: Create a post
+      description: Create a new markdown-backed post resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+            examples:
+              default:
+                value:
+                  title: Notes on Remote Editing
+                  slug: notes-on-remote-editing
+                  excerpt: First thoughts on a phone-first publishing workflow.
+                  template: note
+                  tags:
+                    - product
+                    - mobile
+                  body: |
+                    Remote editing should stay lightweight.
+
+                    The first slice only needs a durable markdown body.
+      responses:
+        "201":
+          description: Post created successfully.
+          headers:
+            Location:
+              description: Canonical URL for the created post resource.
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+  /api/v1/posts/{slug}:
+    get:
+      tags:
+        - Posts
+      operationId: getPost
+      summary: Get a post
+      description: Return the full control-plane representation of a single post.
+      parameters:
+        - $ref: "#/components/parameters/PostSlug"
+      responses:
+        "200":
+          description: Post returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+              examples:
+                default:
+                  value:
+                    slug: dictum-begins
+                    title: Dictum Begins
+                    excerpt: A first seeded document proving the site reads through a content service.
+                    status: published
+                    template: essay
+                    publishedAt: "2026-03-12"
+                    tags:
+                      - architecture
+                      - skeleton
+                    hasStylesheet: true
+                    body: |
+                      Dictum starts life as a hybrid stack with a deliberate split between content, control plane, and presentation.
+
+                      The public site already reads through a service abstraction.
+                    contentPath: posts/dictum-begins/index.md
+                    stylesheetPath: posts/dictum-begins/style.css
+                    metaPath: posts/dictum-begins/meta.json
+        "404":
+          $ref: "#/components/responses/ProblemResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+    patch:
+      tags:
+        - Posts
+      operationId: updatePost
+      summary: Update a post
+      description: Apply a partial update to a post resource.
+      parameters:
+        - $ref: "#/components/parameters/PostSlug"
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: "#/components/schemas/UpdatePostRequest"
+            examples:
+              default:
+                value:
+                  title: Notes on Remote Editing
+                  excerpt: Updated framing for the draft.
+                  tags:
+                    - product
+                    - editing
+                  body: |
+                    Remote editing should stay lightweight.
+
+                    This update proves partial edits are resource-oriented.
+      responses:
+        "200":
+          description: Post updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        "404":
+          $ref: "#/components/responses/ProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+  /api/v1/posts/{slug}/publish:
+    post:
+      tags:
+        - Posts
+      operationId: publishPost
+      summary: Publish a post
+      description: Trigger the publish action for a draft post.
+      parameters:
+        - $ref: "#/components/parameters/PostSlug"
+      responses:
+        "200":
+          description: Post published successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "404":
+          $ref: "#/components/responses/ProblemResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        "409":
+          $ref: "#/components/responses/ProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+  /api/v1/settings/site:
+    get:
+      tags:
+        - Site Settings
+      operationId: getSiteSettings
+      summary: Get site settings
+      description: Return the current site-level settings resource.
+      responses:
+        "200":
+          description: Site settings returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettingsResponse"
+              examples:
+                default:
+                  value:
+                    title: Dictum
+                    subtitle: A remotely steerable markdown blog kit.
+                    motd: "Skeleton mode is live: boundaries first, mutations later."
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+    patch:
+      tags:
+        - Site Settings
+      operationId: updateSiteSettings
+      summary: Update site settings
+      description: Apply a partial update to the site settings resource.
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: "#/components/schemas/UpdateSiteSettingsRequest"
+            examples:
+              default:
+                value:
+                  subtitle: A modular markdown blog platform.
+                  motd: "API-first contract work is underway."
+
+      responses:
+        "200":
+          description: Site settings updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettingsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PostSlug:
+      name: slug
+      in: path
+      required: true
+      description: Stable slug identifying a post resource.
+      schema:
+        type: string
+  responses:
+    ProblemResponse:
+      description: Problem details response.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            notFound:
+              value:
+                type: https://dictum.dev/problems/not-found
+                title: Resource not found
+                status: 404
+                detail: No post exists for slug remote-controls-later
+                instance: /api/v1/posts/remote-controls-later
+    UnauthorizedProblemResponse:
+      description: Authentication is required or the bearer token is invalid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            unauthorized:
+              value:
+                type: https://dictum.dev/problems/unauthorized
+                title: Authentication required
+                status: 401
+                detail: A valid bearer token is required to access this resource.
+                instance: /api/v1/posts
+  schemas:
+    PostStatus:
+      type: string
+      enum:
+        - draft
+        - published
+    PostTemplate:
+      type: string
+      enum:
+        - essay
+        - note
+        - dispatch
+    PostSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - slug
+        - title
+        - excerpt
+        - status
+        - template
+        - tags
+        - hasStylesheet
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+        status:
+          $ref: "#/components/schemas/PostStatus"
+        template:
+          $ref: "#/components/schemas/PostTemplate"
+        publishedAt:
+          type:
+            - string
+            - "null"
+          format: date
+        tags:
+          type: array
+          items:
+            type: string
+        hasStylesheet:
+          type: boolean
+    PostResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - slug
+        - title
+        - excerpt
+        - status
+        - template
+        - tags
+        - hasStylesheet
+        - body
+        - contentPath
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+        status:
+          $ref: "#/components/schemas/PostStatus"
+        template:
+          $ref: "#/components/schemas/PostTemplate"
+        publishedAt:
+          type:
+            - string
+            - "null"
+          format: date
+        tags:
+          type: array
+          items:
+            type: string
+        hasStylesheet:
+          type: boolean
+        body:
+          type: string
+        contentPath:
+          type: string
+        stylesheetPath:
+          type:
+            - string
+            - "null"
+        metaPath:
+          type:
+            - string
+            - "null"
+    CreatePostRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - slug
+        - excerpt
+        - template
+        - tags
+        - body
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        template:
+          $ref: "#/components/schemas/PostTemplate"
+        tags:
+          type: array
+          items:
+            type: string
+        body:
+          type: string
+        stylesheet:
+          type:
+            - string
+            - "null"
+          description: Optional raw CSS sidecar content for the post.
+    UpdatePostRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+        excerpt:
+          type: string
+        template:
+          $ref: "#/components/schemas/PostTemplate"
+        tags:
+          type: array
+          items:
+            type: string
+        body:
+          type: string
+        stylesheet:
+          type:
+            - string
+            - "null"
+        removeStylesheet:
+          type: boolean
+          description: Remove the stylesheet sidecar when true.
+    SiteSettingsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - subtitle
+        - motd
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        motd:
+          type: string
+    UpdateSiteSettingsRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        motd:
+          type: string
+    ProblemDetails:
+      type: object
+      additionalProperties: true
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference

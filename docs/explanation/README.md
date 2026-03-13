@@ -18,6 +18,7 @@ Store conceptual and architecture-facing documentation that helps contributors u
 ## Documents
 
 - [Backend Layering and Service Boundaries](./backend-layering-and-service-boundaries.md)
+- [HTTP API Conventions](./http-api-conventions.md)
 
 ## Scope Boundaries
 
