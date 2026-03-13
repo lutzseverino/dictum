@@ -1,8 +1,10 @@
-package dev.dictum.api.settings;
+package dev.dictum.api.site.controller;
 
 import dev.dictum.api.generated.api.SiteSettingsApi;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
+import dev.dictum.api.site.service.SiteSettingsCommandService;
+import dev.dictum.api.site.service.SiteSettingsQueryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;

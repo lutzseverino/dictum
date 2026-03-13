@@ -1,11 +1,11 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.model.vo;
 
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
 import java.time.LocalDate;
 import java.util.List;
 
-record PostState(
+public record PostState(
     String slug,
     String title,
     String excerpt,

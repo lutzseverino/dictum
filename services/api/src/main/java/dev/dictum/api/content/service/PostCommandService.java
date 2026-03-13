@@ -1,16 +1,24 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.service;
 
-import dev.dictum.api.api.MergePatchBodyAccessor;
+import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.content.model.vo.PostPatchFields;
+import dev.dictum.api.content.model.vo.PostSlug;
+import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.model.vo.PostTags;
+import dev.dictum.api.content.repository.InMemoryPostStore;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.UpdatePostRequest;
-import dev.dictum.api.settings.InvalidPatchRequestException;
+import dev.dictum.api.web.error.InvalidPatchRequestException;
+import dev.dictum.api.web.patch.MergePatchBodyAccessor;
+import dev.dictum.api.web.patch.MergePatchFieldRules;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 
 @Service
-class PostCommandService {
+public class PostCommandService {
 
   private static final String POSTS_DIRECTORY = "posts/";
   private static final String INDEX_FILENAME = "index.md";
@@ -31,7 +39,7 @@ class PostCommandService {
   }
 
   public PostResponse create(CreatePostRequest request) {
-    String slug = PostInputRules.requireValidSlug(request.getSlug());
+    String slug = new PostSlug(request.getSlug()).value();
 
     if (postStore.exists(slug)) {
       throw new PostConflictException("A post already exists for slug " + slug);
@@ -45,7 +53,7 @@ class PostCommandService {
             PostStatus.DRAFT,
             request.getTemplate(),
             null,
-            PostInputRules.copyTags("tags", request.getTags()),
+            new PostTags(request.getTags()).values(),
             request.getStylesheet() != null,
             request.getBody(),
             contentPathFor(slug),
@@ -90,11 +98,11 @@ class PostCommandService {
   }
 
   private PostState requireState(String slug) {
-    PostInputRules.requireValidSlug(slug);
+    String validatedSlug = new PostSlug(slug).value();
 
     return postStore
-        .findBySlug(slug)
-        .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + slug));
+        .findBySlug(validatedSlug)
+        .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
   }
 
   private String contentPathFor(String slug) {
@@ -123,21 +131,18 @@ class PostCommandService {
   }
 
   private void validateUpdateRequest(UpdatePostRequest request, PostPatchFields patchFields) {
-    requireNonNullWhenPresent("title", patchFields.title(), request.getTitle());
-    requireNonNullWhenPresent("excerpt", patchFields.excerpt(), request.getExcerpt());
-    requireNonNullWhenPresent("template", patchFields.template(), request.getTemplate());
-    requireNonNullWhenPresent("body", patchFields.body(), request.getBody());
-    requireNonNullWhenPresent(
+    MergePatchFieldRules.requireNonNullWhenPresent(
+        "title", patchFields.title(), request.getTitle());
+    MergePatchFieldRules.requireNonNullWhenPresent(
+        "excerpt", patchFields.excerpt(), request.getExcerpt());
+    MergePatchFieldRules.requireNonNullWhenPresent(
+        "template", patchFields.template(), request.getTemplate());
+    MergePatchFieldRules.requireNonNullWhenPresent("body", patchFields.body(), request.getBody());
+    MergePatchFieldRules.requireNonNullWhenPresent(
         "removeStylesheet", patchFields.removeStylesheet(), request.getRemoveStylesheet());
 
     if (patchFields.tags() && mergePatchBodyAccessor.isExplicitNull("tags")) {
       throw new InvalidPatchRequestException("Field tags cannot be null");
-    }
-  }
-
-  private void requireNonNullWhenPresent(String fieldName, boolean fieldPresent, Object value) {
-    if (fieldPresent && value == null) {
-      throw new InvalidPatchRequestException("Field " + fieldName + " cannot be null");
     }
   }
 
@@ -153,7 +158,7 @@ class PostCommandService {
         current.status(),
         patchFields.template() ? request.getTemplate() : current.template(),
         current.publishedAt(),
-        patchFields.tags() ? PostInputRules.copyTags("tags", request.getTags()) : current.tags(),
+        patchFields.tags() ? new PostTags(request.getTags()).values() : current.tags(),
         stylesheetPath != null,
         patchFields.body() ? request.getBody() : current.body(),
         current.contentPath(),
@@ -184,13 +189,4 @@ class PostCommandService {
   private String postAssetPath(String slug, String filename) {
     return POSTS_DIRECTORY + slug + "/" + filename;
   }
-
-  private record PostPatchFields(
-      boolean title,
-      boolean excerpt,
-      boolean template,
-      boolean tags,
-      boolean body,
-      boolean stylesheet,
-      boolean removeStylesheet) {}
 }
