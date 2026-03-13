@@ -5,10 +5,10 @@ import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
 import dev.dictum.api.generated.model.UpdatePostRequest;
-import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 public class PostsController implements PostsApi {
@@ -29,7 +29,11 @@ public class PostsController implements PostsApi {
   @Override
   public ResponseEntity<PostResponse> createPost(CreatePostRequest createPostRequest) {
     PostResponse response = postCommandService.create(createPostRequest);
-    return ResponseEntity.created(URI.create("/api/v1/posts/" + response.getSlug())).body(response);
+    return ResponseEntity.created(
+            UriComponentsBuilder.fromPath("/api/v1/posts/{slug}")
+                .buildAndExpand(response.getSlug())
+                .toUri())
+        .body(response);
   }
 
   @Override

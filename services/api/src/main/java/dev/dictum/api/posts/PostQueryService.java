@@ -21,6 +21,8 @@ public class PostQueryService {
   }
 
   public PostResponse getResponse(String slug) {
+    PostInputRules.requireValidSlug(slug);
+
     PostState state =
         postStore
             .findBySlug(slug)

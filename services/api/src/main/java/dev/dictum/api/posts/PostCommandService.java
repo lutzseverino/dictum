@@ -7,7 +7,6 @@ import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.UpdatePostRequest;
 import dev.dictum.api.settings.InvalidPatchRequestException;
 import java.time.LocalDate;
-import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,24 +26,26 @@ public class PostCommandService {
   }
 
   public PostResponse create(CreatePostRequest request) {
-    if (postStore.exists(request.getSlug())) {
-      throw new PostConflictException("A post already exists for slug " + request.getSlug());
+    String slug = PostInputRules.requireValidSlug(request.getSlug());
+
+    if (postStore.exists(slug)) {
+      throw new PostConflictException("A post already exists for slug " + slug);
     }
 
     PostState created =
         new PostState(
-            request.getSlug(),
+            slug,
             request.getTitle(),
             request.getExcerpt(),
             PostStatus.DRAFT,
             request.getTemplate(),
             null,
-            List.copyOf(request.getTags()),
+            PostInputRules.copyTags("tags", request.getTags()),
             request.getStylesheet() != null,
             request.getBody(),
-            contentPathFor(request.getSlug()),
-            request.getStylesheet() != null ? stylesheetPathFor(request.getSlug()) : null,
-            metaPathFor(request.getSlug()));
+            contentPathFor(slug),
+            request.getStylesheet() != null ? stylesheetPathFor(slug) : null,
+            metaPathFor(slug));
 
     return postApiMapper.toResponse(postStore.save(created));
   }
@@ -96,7 +97,7 @@ public class PostCommandService {
                 : current.template(),
             current.publishedAt(),
             mergePatchBodyAccessor.containsField("tags")
-                ? List.copyOf(request.getTags())
+                ? PostInputRules.copyTags("tags", request.getTags())
                 : current.tags(),
             stylesheetPath != null,
             mergePatchBodyAccessor.containsField("body") ? request.getBody() : current.body(),
@@ -133,6 +134,8 @@ public class PostCommandService {
   }
 
   private PostState requireState(String slug) {
+    PostInputRules.requireValidSlug(slug);
+
     return postStore
         .findBySlug(slug)
         .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + slug));
