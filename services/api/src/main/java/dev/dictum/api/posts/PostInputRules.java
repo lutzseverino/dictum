@@ -1,16 +1,13 @@
 package dev.dictum.api.posts;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 final class PostInputRules {
-
-  private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
 
   private PostInputRules() {}
 
   static String requireValidSlug(String slug) {
-    if (slug == null || !SLUG_PATTERN.matcher(slug).matches()) {
+    if (!isValidSlug(slug)) {
       throw new InvalidPostRequestException(
           "Slug must be lowercase kebab-case using letters, numbers, and hyphens");
     }
@@ -28,5 +25,38 @@ final class PostInputRules {
     }
 
     return List.copyOf(tags);
+  }
+
+  private static boolean isValidSlug(String slug) {
+    if (slug == null || slug.isBlank()) {
+      return false;
+    }
+
+    if (slug.charAt(0) == '-' || slug.charAt(slug.length() - 1) == '-') {
+      return false;
+    }
+
+    boolean previousWasHyphen = false;
+
+    for (int index = 0; index < slug.length(); index++) {
+      char current = slug.charAt(index);
+
+      if (current == '-') {
+        if (previousWasHyphen) {
+          return false;
+        }
+
+        previousWasHyphen = true;
+        continue;
+      }
+
+      if (!Character.isDigit(current) && (current < 'a' || current > 'z')) {
+        return false;
+      }
+
+      previousWasHyphen = false;
+    }
+
+    return true;
   }
 }

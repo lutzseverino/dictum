@@ -6,12 +6,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PostQueryService {
+class PostQueryService {
 
   private final InMemoryPostStore postStore;
   private final PostApiMapper postApiMapper;
 
-  public PostQueryService(InMemoryPostStore postStore, PostApiMapper postApiMapper) {
+  PostQueryService(InMemoryPostStore postStore, PostApiMapper postApiMapper) {
     this.postStore = postStore;
     this.postApiMapper = postApiMapper;
   }

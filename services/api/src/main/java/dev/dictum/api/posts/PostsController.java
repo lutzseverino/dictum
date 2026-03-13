@@ -7,16 +7,18 @@ import dev.dictum.api.generated.model.PostSummary;
 import dev.dictum.api.generated.model.UpdatePostRequest;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
+@Validated
 public class PostsController implements PostsApi {
 
   private final PostQueryService postQueryService;
   private final PostCommandService postCommandService;
 
-  public PostsController(PostQueryService postQueryService, PostCommandService postCommandService) {
+  PostsController(PostQueryService postQueryService, PostCommandService postCommandService) {
     this.postQueryService = postQueryService;
     this.postCommandService = postCommandService;
   }
