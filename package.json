@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "pnpm@10.30.2",
   "scripts": {
+    "generate:api": "pnpm generate:api:frontend && ./services/api/mvnw -f services/api/pom.xml generate-sources",
+    "generate:api:frontend": "rm -rf packages/api-client/src/generated && pnpm exec openapi-generator-cli generate -i docs/openapi/dictum.yaml -g typescript-fetch -o packages/api-client/src/generated --additional-properties=typescriptThreePlus=true,supportsES6=true,useSingleRequestParameter=true,modelPropertyNaming=original",
     "dev:site": "pnpm --dir apps/site dev",
     "dev:admin": "pnpm --dir apps/admin dev",
     "dev:api": "./services/api/mvnw -f services/api/pom.xml spring-boot:run",
@@ -15,6 +17,7 @@
     "typecheck:web": "pnpm --filter @dictum/site typecheck && pnpm --filter @dictum/admin typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.11"
+    "@biomejs/biome": "2.3.11",
+    "@openapitools/openapi-generator-cli": "2.30.2"
   }
 }

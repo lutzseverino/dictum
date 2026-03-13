@@ -80,7 +80,7 @@ Examples:
 
 Command services serve mutation endpoints.
 
-- Use explicit verbs for mutations such as `publish(...)`, `updateSettings(...)`, or `enqueueProviderJob(...)`.
+- Use the leanest unambiguous verb for mutations such as `create(...)`, `update(...)`, `publish(...)`, or `enqueueProviderJob(...)`.
 - Command services may load and mutate entities internally.
 - Command services still return response DTOs at their public boundary.
 - Command services should be resource-scoped rather than split into one top-level class per action unless the command surface later becomes materially mixed.
