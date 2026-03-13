@@ -12,6 +12,9 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 @Component
 public class MergePatchBodyAccessor {
 
+  private static final String CACHED_BODY_ATTRIBUTE =
+      MergePatchBodyAccessor.class.getName() + ".currentBody";
+
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public boolean containsField(String fieldName) {
@@ -23,7 +26,13 @@ public class MergePatchBodyAccessor {
   }
 
   public void requireAnyField() {
-    if (currentBody().isEmpty()) {
+    JsonNode body = currentBody();
+
+    if (!body.isObject()) {
+      throw new InvalidPatchRequestException("PATCH requests must use a JSON object body");
+    }
+
+    if (body.isEmpty()) {
       throw new InvalidPatchRequestException("PATCH requests must include at least one field");
     }
   }
@@ -36,16 +45,26 @@ public class MergePatchBodyAccessor {
       throw new InvalidPatchRequestException("PATCH request body could not be inspected");
     }
 
+    Object cachedBody = wrapper.getAttribute(CACHED_BODY_ATTRIBUTE);
+    if (cachedBody instanceof JsonNode jsonNode) {
+      return jsonNode;
+    }
+
     byte[] body = wrapper.getContentAsByteArray();
+    JsonNode parsedBody;
 
     if (body.length == 0) {
-      return objectMapper.createObjectNode();
+      parsedBody = objectMapper.createObjectNode();
+      wrapper.setAttribute(CACHED_BODY_ATTRIBUTE, parsedBody);
+      return parsedBody;
     }
 
     try {
       // The generated merge-patch DTOs do not preserve field presence, so PATCH
       // semantics are derived from the raw request document instead.
-      return objectMapper.readTree(body);
+      parsedBody = objectMapper.readTree(body);
+      wrapper.setAttribute(CACHED_BODY_ATTRIBUTE, parsedBody);
+      return parsedBody;
     } catch (IOException exception) {
       throw new InvalidPatchRequestException("PATCH request body could not be parsed");
     }
