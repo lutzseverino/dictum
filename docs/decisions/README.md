@@ -19,6 +19,7 @@ Preserve durable decisions, tradeoffs, and rejected alternatives so future contr
 
 - [0001: Adopt Diataxis, MADR, and OpenAPI for project documentation](./0001-adopt-diataxis-madr-openapi.md)
 - [0002: Keep entities inside service boundaries](./0002-keep-entities-inside-service-boundaries.md)
+- [0003: Adopt spec-first code generation](./0003-adopt-spec-first-code-generation.md)
 
 ## Scope Boundaries
 

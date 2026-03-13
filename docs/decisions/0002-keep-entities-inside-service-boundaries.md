@@ -32,7 +32,7 @@ Dictum will enforce these backend boundaries:
 - Services are grouped by resource first, then split into query and command responsibilities as needed.
 - Read flows prefer projections or read models mapped to DTOs.
 - Query services use `getResponse(...)` for singular reads and `listResponses(...)` for collection reads.
-- Command services use explicit verbs for mutations.
+- Command services use lean, resource-scoped verbs for mutations such as `create(...)`, `update(...)`, and `publish(...)`.
 - MapStruct is the preferred mapping approach between projections/entities and DTOs.
 
 ## Consequences
