@@ -150,6 +150,31 @@ class DictumApiApplicationTests {
   }
 
   @Test
+  void createPostRejectsUnknownFields() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "POST",
+            "/api/v1/posts",
+            MediaType.APPLICATION_JSON_VALUE,
+            """
+            {
+              "title": "Unknown Field",
+              "slug": "unknown-field",
+              "excerpt": "Unknown properties should not be ignored.",
+              "template": "essay",
+              "tags": ["architecture"],
+              "body": "Unknown field body.",
+              "unexpected": "value"
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+  }
+
+  @Test
   void updatePostAppliesOnlyProvidedFields() throws Exception {
     HttpResponse<String> response =
         request(
@@ -215,6 +240,25 @@ class DictumApiApplicationTests {
             """
             {
               "tags": ["admin", null]
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+  }
+
+  @Test
+  void updatePostRejectsUnknownFields() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "PATCH",
+            "/api/v1/posts/remote-controls-later",
+            MERGE_PATCH_JSON,
+            """
+            {
+              "unexpected": "value"
             }
             """);
 
