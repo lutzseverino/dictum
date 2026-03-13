@@ -28,7 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<openapi.generator.version>7.14.0</openapi.generator.version>
 		<maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 		<spotless.version>2.44.5</spotless.version>
 		<springdoc.version>3.0.2</springdoc.version>
 	</properties>
@@ -50,6 +52,11 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -60,6 +67,41 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>${openapi.generator.version}</version>
+				<executions>
+					<execution>
+						<id>generate-contract-types</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/../../docs/openapi/dictum.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>dev.dictum.api.generated.api</apiPackage>
+							<modelPackage>dev.dictum.api.generated.model</modelPackage>
+							<output>${project.build.directory}/generated-sources/openapi</output>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateModelDocumentation>false</generateModelDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<configOptions>
+								<interfaceOnly>true</interfaceOnly>
+								<useTags>true</useTags>
+								<useSpringBoot3>true</useSpringBoot3>
+								<containerDefaultToNull>true</containerDefaultToNull>
+								<openApiNullable>false</openApiNullable>
+								<dateLibrary>java8</dateLibrary>
+								<documentationProvider>none</documentationProvider>
+								<performBeanValidation>true</performBeanValidation>
+							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
@@ -83,6 +125,19 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
