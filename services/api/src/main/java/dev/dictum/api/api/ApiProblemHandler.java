@@ -1,6 +1,7 @@
 package dev.dictum.api.api;
 
 import dev.dictum.api.generated.model.ProblemDetails;
+import dev.dictum.api.posts.InvalidPostRequestException;
 import dev.dictum.api.posts.PostConflictException;
 import dev.dictum.api.posts.PostNotFoundException;
 import dev.dictum.api.settings.InvalidPatchRequestException;
@@ -43,6 +44,17 @@ public class ApiProblemHandler {
   @ExceptionHandler(InvalidPatchRequestException.class)
   public ResponseEntity<ProblemDetails> handleInvalidPatch(
       InvalidPatchRequestException exception, HttpServletRequest request) {
+    return problem(
+        HttpStatus.BAD_REQUEST,
+        "https://dictum.dev/problems/bad-request",
+        "Bad request",
+        exception.getMessage(),
+        request);
+  }
+
+  @ExceptionHandler(InvalidPostRequestException.class)
+  public ResponseEntity<ProblemDetails> handleInvalidPostRequest(
+      InvalidPostRequestException exception, HttpServletRequest request) {
     return problem(
         HttpStatus.BAD_REQUEST,
         "https://dictum.dev/problems/bad-request",

@@ -102,6 +102,54 @@ class DictumApiApplicationTests {
   }
 
   @Test
+  void createPostRejectsSlugOutsideThePublishedSlugFormat() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "POST",
+            "/api/v1/posts",
+            MediaType.APPLICATION_JSON_VALUE,
+            """
+            {
+              "title": "Invalid Slug",
+              "slug": "Invalid Slug",
+              "excerpt": "Slug contains spaces and capitals.",
+              "template": "essay",
+              "tags": ["architecture"],
+              "body": "Invalid slug body."
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+  }
+
+  @Test
+  void createPostRejectsTagsContainingNullEntries() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "POST",
+            "/api/v1/posts",
+            MediaType.APPLICATION_JSON_VALUE,
+            """
+            {
+              "title": "Invalid Tags",
+              "slug": "invalid-tags",
+              "excerpt": "Tags contain a null item.",
+              "template": "essay",
+              "tags": ["architecture", null],
+              "body": "Invalid tags body."
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+  }
+
+  @Test
   void updatePostAppliesOnlyProvidedFields() throws Exception {
     HttpResponse<String> response =
         request(
@@ -155,6 +203,25 @@ class DictumApiApplicationTests {
     assertThat(response.body()).contains("\"hasStylesheet\":false");
     assertThat(response.body()).contains("\"stylesheetPath\":null");
     assertThat(response.body()).contains("\"title\":\"Dictum Begins\"");
+  }
+
+  @Test
+  void updatePostRejectsTagsContainingNullEntries() throws Exception {
+    HttpResponse<String> response =
+        request(
+            "PATCH",
+            "/api/v1/posts/remote-controls-later",
+            MERGE_PATCH_JSON,
+            """
+            {
+              "tags": ["admin", null]
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(400);
+    assertThat(response.headers().firstValue("content-type"))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
   }
 
   @Test

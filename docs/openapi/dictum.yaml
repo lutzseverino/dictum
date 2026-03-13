@@ -283,6 +283,7 @@ components:
       description: Stable slug identifying a post resource.
       schema:
         type: string
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
   responses:
     ProblemResponse:
       description: Problem details response.
@@ -338,6 +339,7 @@ components:
       properties:
         slug:
           type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         title:
           type: string
         excerpt:
@@ -355,6 +357,7 @@ components:
           type: array
           items:
             type: string
+            minLength: 1
         hasStylesheet:
           type: boolean
     PostResponse:
@@ -373,6 +376,7 @@ components:
       properties:
         slug:
           type: string
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         title:
           type: string
         excerpt:
@@ -390,6 +394,7 @@ components:
           type: array
           items:
             type: string
+            minLength: 1
         hasStylesheet:
           type: boolean
         body:
@@ -427,6 +432,7 @@ components:
           type: array
           items:
             type: string
+            minLength: 1
         body:
           type: string
         stylesheet:
