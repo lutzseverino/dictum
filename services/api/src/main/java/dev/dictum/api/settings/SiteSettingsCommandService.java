@@ -6,13 +6,13 @@ import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SiteSettingsCommandService {
+class SiteSettingsCommandService {
 
   private final InMemorySiteSettingsStore siteSettingsStore;
   private final SiteSettingsApiMapper siteSettingsApiMapper;
   private final MergePatchBodyAccessor mergePatchBodyAccessor;
 
-  public SiteSettingsCommandService(
+  SiteSettingsCommandService(
       InMemorySiteSettingsStore siteSettingsStore,
       SiteSettingsApiMapper siteSettingsApiMapper,
       MergePatchBodyAccessor mergePatchBodyAccessor) {
@@ -21,30 +21,41 @@ public class SiteSettingsCommandService {
     this.mergePatchBodyAccessor = mergePatchBodyAccessor;
   }
 
-  public SiteSettingsResponse updateSiteSettings(UpdateSiteSettingsRequest request) {
+  public SiteSettingsResponse update(UpdateSiteSettingsRequest request) {
     SiteSettingsState current = siteSettingsStore.get();
-    mergePatchBodyAccessor.requireAnyField();
-
-    if (mergePatchBodyAccessor.containsField("title") && request.getTitle() == null) {
-      throw new InvalidPatchRequestException("Field title cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("subtitle") && request.getSubtitle() == null) {
-      throw new InvalidPatchRequestException("Field subtitle cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("motd") && request.getMotd() == null) {
-      throw new InvalidPatchRequestException("Field motd cannot be null");
-    }
+    SiteSettingsPatchFields patchFields = readPatchFields();
+    validateUpdateRequest(request, patchFields);
 
     SiteSettingsState updated =
         new SiteSettingsState(
-            mergePatchBodyAccessor.containsField("title") ? request.getTitle() : current.title(),
-            mergePatchBodyAccessor.containsField("subtitle")
-                ? request.getSubtitle()
-                : current.subtitle(),
-            mergePatchBodyAccessor.containsField("motd") ? request.getMotd() : current.motd());
+            patchFields.title() ? request.getTitle() : current.title(),
+            patchFields.subtitle() ? request.getSubtitle() : current.subtitle(),
+            patchFields.motd() ? request.getMotd() : current.motd());
 
     return siteSettingsApiMapper.toResponse(siteSettingsStore.save(updated));
   }
+
+  private SiteSettingsPatchFields readPatchFields() {
+    mergePatchBodyAccessor.requireAnyField();
+
+    return new SiteSettingsPatchFields(
+        mergePatchBodyAccessor.containsField("title"),
+        mergePatchBodyAccessor.containsField("subtitle"),
+        mergePatchBodyAccessor.containsField("motd"));
+  }
+
+  private void validateUpdateRequest(
+      UpdateSiteSettingsRequest request, SiteSettingsPatchFields patchFields) {
+    requireNonNullWhenPresent("title", patchFields.title(), request.getTitle());
+    requireNonNullWhenPresent("subtitle", patchFields.subtitle(), request.getSubtitle());
+    requireNonNullWhenPresent("motd", patchFields.motd(), request.getMotd());
+  }
+
+  private void requireNonNullWhenPresent(String fieldName, boolean fieldPresent, Object value) {
+    if (fieldPresent && value == null) {
+      throw new InvalidPatchRequestException("Field " + fieldName + " cannot be null");
+    }
+  }
+
+  private record SiteSettingsPatchFields(boolean title, boolean subtitle, boolean motd) {}
 }

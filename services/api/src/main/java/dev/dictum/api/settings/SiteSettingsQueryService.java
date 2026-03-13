@@ -4,12 +4,12 @@ import dev.dictum.api.generated.model.SiteSettingsResponse;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SiteSettingsQueryService {
+class SiteSettingsQueryService {
 
   private final InMemorySiteSettingsStore siteSettingsStore;
   private final SiteSettingsApiMapper siteSettingsApiMapper;
 
-  public SiteSettingsQueryService(
+  SiteSettingsQueryService(
       InMemorySiteSettingsStore siteSettingsStore, SiteSettingsApiMapper siteSettingsApiMapper) {
     this.siteSettingsStore = siteSettingsStore;
     this.siteSettingsApiMapper = siteSettingsApiMapper;

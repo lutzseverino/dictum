@@ -10,13 +10,18 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PostCommandService {
+class PostCommandService {
+
+  private static final String POSTS_DIRECTORY = "posts/";
+  private static final String INDEX_FILENAME = "index.md";
+  private static final String STYLESHEET_FILENAME = "style.css";
+  private static final String META_FILENAME = "meta.json";
 
   private final InMemoryPostStore postStore;
   private final PostApiMapper postApiMapper;
   private final MergePatchBodyAccessor mergePatchBodyAccessor;
 
-  public PostCommandService(
+  PostCommandService(
       InMemoryPostStore postStore,
       PostApiMapper postApiMapper,
       MergePatchBodyAccessor mergePatchBodyAccessor) {
@@ -52,65 +57,11 @@ public class PostCommandService {
 
   public PostResponse update(String slug, UpdatePostRequest request) {
     PostState current = requireState(slug);
-    mergePatchBodyAccessor.requireAnyField();
-    String stylesheetPath = current.stylesheetPath();
+    PostPatchFields patchFields = readPatchFields();
+    validateUpdateRequest(request, patchFields);
 
-    if (mergePatchBodyAccessor.containsField("title") && request.getTitle() == null) {
-      throw new InvalidPatchRequestException("Field title cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("excerpt") && request.getExcerpt() == null) {
-      throw new InvalidPatchRequestException("Field excerpt cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("template") && request.getTemplate() == null) {
-      throw new InvalidPatchRequestException("Field template cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("body") && request.getBody() == null) {
-      throw new InvalidPatchRequestException("Field body cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("tags")
-        && mergePatchBodyAccessor.isExplicitNull("tags")) {
-      throw new InvalidPatchRequestException("Field tags cannot be null");
-    }
-
-    if (mergePatchBodyAccessor.containsField("removeStylesheet")
-        && request.getRemoveStylesheet() == null) {
-      throw new InvalidPatchRequestException("Field removeStylesheet cannot be null");
-    }
-
-    if (Boolean.TRUE.equals(request.getRemoveStylesheet())) {
-      stylesheetPath = null;
-    } else if (mergePatchBodyAccessor.containsField("stylesheet")) {
-      stylesheetPath = request.getStylesheet() != null ? stylesheetPathFor(slug) : null;
-    } else if (request.getStylesheet() != null) {
-      stylesheetPath = stylesheetPathFor(slug);
-    }
-
-    PostState updated =
-        new PostState(
-            current.slug(),
-            mergePatchBodyAccessor.containsField("title") ? request.getTitle() : current.title(),
-            mergePatchBodyAccessor.containsField("excerpt")
-                ? request.getExcerpt()
-                : current.excerpt(),
-            current.status(),
-            mergePatchBodyAccessor.containsField("template")
-                ? request.getTemplate()
-                : current.template(),
-            current.publishedAt(),
-            mergePatchBodyAccessor.containsField("tags")
-                ? PostInputRules.copyTags("tags", request.getTags())
-                : current.tags(),
-            stylesheetPath != null,
-            mergePatchBodyAccessor.containsField("body") ? request.getBody() : current.body(),
-            current.contentPath(),
-            stylesheetPath,
-            current.metaPath());
-
-    return postApiMapper.toResponse(postStore.save(updated));
+    return postApiMapper.toResponse(
+        postStore.save(updatedState(slug, current, request, patchFields)));
   }
 
   public PostResponse publish(String slug) {
@@ -147,14 +98,99 @@ public class PostCommandService {
   }
 
   private String contentPathFor(String slug) {
-    return "posts/" + slug + "/index.md";
+    return postAssetPath(slug, INDEX_FILENAME);
   }
 
   private String stylesheetPathFor(String slug) {
-    return "posts/" + slug + "/style.css";
+    return postAssetPath(slug, STYLESHEET_FILENAME);
   }
 
   private String metaPathFor(String slug) {
-    return "posts/" + slug + "/meta.json";
+    return postAssetPath(slug, META_FILENAME);
   }
+
+  private PostPatchFields readPatchFields() {
+    mergePatchBodyAccessor.requireAnyField();
+
+    return new PostPatchFields(
+        mergePatchBodyAccessor.containsField("title"),
+        mergePatchBodyAccessor.containsField("excerpt"),
+        mergePatchBodyAccessor.containsField("template"),
+        mergePatchBodyAccessor.containsField("tags"),
+        mergePatchBodyAccessor.containsField("body"),
+        mergePatchBodyAccessor.containsField("stylesheet"),
+        mergePatchBodyAccessor.containsField("removeStylesheet"));
+  }
+
+  private void validateUpdateRequest(UpdatePostRequest request, PostPatchFields patchFields) {
+    requireNonNullWhenPresent("title", patchFields.title(), request.getTitle());
+    requireNonNullWhenPresent("excerpt", patchFields.excerpt(), request.getExcerpt());
+    requireNonNullWhenPresent("template", patchFields.template(), request.getTemplate());
+    requireNonNullWhenPresent("body", patchFields.body(), request.getBody());
+    requireNonNullWhenPresent(
+        "removeStylesheet", patchFields.removeStylesheet(), request.getRemoveStylesheet());
+
+    if (patchFields.tags() && mergePatchBodyAccessor.isExplicitNull("tags")) {
+      throw new InvalidPatchRequestException("Field tags cannot be null");
+    }
+  }
+
+  private void requireNonNullWhenPresent(String fieldName, boolean fieldPresent, Object value) {
+    if (fieldPresent && value == null) {
+      throw new InvalidPatchRequestException("Field " + fieldName + " cannot be null");
+    }
+  }
+
+  private PostState updatedState(
+      String slug, PostState current, UpdatePostRequest request, PostPatchFields patchFields) {
+    String stylesheetPath =
+        resolveStylesheetPath(slug, current.stylesheetPath(), request, patchFields);
+
+    return new PostState(
+        current.slug(),
+        patchFields.title() ? request.getTitle() : current.title(),
+        patchFields.excerpt() ? request.getExcerpt() : current.excerpt(),
+        current.status(),
+        patchFields.template() ? request.getTemplate() : current.template(),
+        current.publishedAt(),
+        patchFields.tags() ? PostInputRules.copyTags("tags", request.getTags()) : current.tags(),
+        stylesheetPath != null,
+        patchFields.body() ? request.getBody() : current.body(),
+        current.contentPath(),
+        stylesheetPath,
+        current.metaPath());
+  }
+
+  private String resolveStylesheetPath(
+      String slug,
+      String currentStylesheetPath,
+      UpdatePostRequest request,
+      PostPatchFields patchFields) {
+    if (Boolean.TRUE.equals(request.getRemoveStylesheet())) {
+      return null;
+    }
+
+    if (patchFields.stylesheet()) {
+      return request.getStylesheet() != null ? stylesheetPathFor(slug) : null;
+    }
+
+    if (request.getStylesheet() != null) {
+      return stylesheetPathFor(slug);
+    }
+
+    return currentStylesheetPath;
+  }
+
+  private String postAssetPath(String slug, String filename) {
+    return POSTS_DIRECTORY + slug + "/" + filename;
+  }
+
+  private record PostPatchFields(
+      boolean title,
+      boolean excerpt,
+      boolean template,
+      boolean tags,
+      boolean body,
+      boolean stylesheet,
+      boolean removeStylesheet) {}
 }

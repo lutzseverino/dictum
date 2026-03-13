@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ApiProblemHandler {
 
+  private static final String BAD_REQUEST_TYPE = "https://dictum.dev/problems/bad-request";
+  private static final String BAD_REQUEST_TITLE = "Bad request";
+
   @ExceptionHandler(PostNotFoundException.class)
   public ResponseEntity<ProblemDetails> handlePostNotFound(
       PostNotFoundException exception, HttpServletRequest request) {
@@ -44,23 +47,13 @@ public class ApiProblemHandler {
   @ExceptionHandler(InvalidPatchRequestException.class)
   public ResponseEntity<ProblemDetails> handleInvalidPatch(
       InvalidPatchRequestException exception, HttpServletRequest request) {
-    return problem(
-        HttpStatus.BAD_REQUEST,
-        "https://dictum.dev/problems/bad-request",
-        "Bad request",
-        exception.getMessage(),
-        request);
+    return badRequest(exception.getMessage(), request);
   }
 
   @ExceptionHandler(InvalidPostRequestException.class)
   public ResponseEntity<ProblemDetails> handleInvalidPostRequest(
       InvalidPostRequestException exception, HttpServletRequest request) {
-    return problem(
-        HttpStatus.BAD_REQUEST,
-        "https://dictum.dev/problems/bad-request",
-        "Bad request",
-        exception.getMessage(),
-        request);
+    return badRequest(exception.getMessage(), request);
   }
 
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -77,12 +70,7 @@ public class ApiProblemHandler {
   @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
   public ResponseEntity<ProblemDetails> handleBadRequest(
       Exception exception, HttpServletRequest request) {
-    return problem(
-        HttpStatus.BAD_REQUEST,
-        "https://dictum.dev/problems/bad-request",
-        "Bad request",
-        exception.getMessage(),
-        request);
+    return badRequest(exception.getMessage(), request);
   }
 
   private ResponseEntity<ProblemDetails> problem(
@@ -94,5 +82,9 @@ public class ApiProblemHandler {
             .instance(URI.create(request.getRequestURI()).toString());
 
     return ResponseEntity.status(status).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(body);
+  }
+
+  private ResponseEntity<ProblemDetails> badRequest(String detail, HttpServletRequest request) {
+    return problem(HttpStatus.BAD_REQUEST, BAD_REQUEST_TYPE, BAD_REQUEST_TITLE, detail, request);
   }
 }
