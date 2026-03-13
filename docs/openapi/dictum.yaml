@@ -58,6 +58,8 @@ paths:
                         - admin
                         - control-plane
                       hasStylesheet: false
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     post:
@@ -99,6 +101,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PostResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
   /api/v1/posts/{slug}:
@@ -129,6 +133,7 @@ paths:
                     tags:
                       - architecture
                       - skeleton
+                    hasStylesheet: true
                     body: |
                       Dictum starts life as a hybrid stack with a deliberate split between content, control plane, and presentation.
 
@@ -138,6 +143,8 @@ paths:
                     metaPath: posts/dictum-begins/meta.json
         "404":
           $ref: "#/components/responses/ProblemResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     patch:
@@ -151,7 +158,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          application/merge-patch+json:
             schema:
               $ref: "#/components/schemas/UpdatePostRequest"
             examples:
@@ -173,6 +180,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PostResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         "404":
           $ref: "#/components/responses/ProblemResponse"
         default:
@@ -195,6 +204,8 @@ paths:
                 $ref: "#/components/schemas/PostResponse"
         "404":
           $ref: "#/components/responses/ProblemResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         "409":
           $ref: "#/components/responses/ProblemResponse"
         default:
@@ -219,6 +230,8 @@ paths:
                     title: Dictum
                     subtitle: A remotely steerable markdown blog kit.
                     motd: "Skeleton mode is live: boundaries first, mutations later."
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     patch:
@@ -230,7 +243,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          application/merge-patch+json:
             schema:
               $ref: "#/components/schemas/UpdateSiteSettingsRequest"
             examples:
@@ -246,6 +259,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SiteSettingsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
 components:
@@ -277,6 +292,20 @@ components:
                 status: 404
                 detail: No post exists for slug remote-controls-later
                 instance: /api/v1/posts/remote-controls-later
+    UnauthorizedProblemResponse:
+      description: Authentication is required or the bearer token is invalid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            unauthorized:
+              value:
+                type: https://dictum.dev/problems/unauthorized
+                title: Authentication required
+                status: 401
+                detail: A valid bearer token is required to access this resource.
+                instance: /api/v1/posts
   schemas:
     PostStatus:
       type: string
@@ -323,26 +352,52 @@ components:
         hasStylesheet:
           type: boolean
     PostResponse:
-      allOf:
-        - $ref: "#/components/schemas/PostSummary"
-        - type: object
-          additionalProperties: false
-          required:
-            - body
-            - contentPath
-          properties:
-            body:
-              type: string
-            contentPath:
-              type: string
-            stylesheetPath:
-              type:
-                - string
-                - "null"
-            metaPath:
-              type:
-                - string
-                - "null"
+      type: object
+      additionalProperties: false
+      required:
+        - slug
+        - title
+        - excerpt
+        - status
+        - template
+        - tags
+        - hasStylesheet
+        - body
+        - contentPath
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+        status:
+          $ref: "#/components/schemas/PostStatus"
+        template:
+          $ref: "#/components/schemas/PostTemplate"
+        publishedAt:
+          type:
+            - string
+            - "null"
+          format: date
+        tags:
+          type: array
+          items:
+            type: string
+        hasStylesheet:
+          type: boolean
+        body:
+          type: string
+        contentPath:
+          type: string
+        stylesheetPath:
+          type:
+            - string
+            - "null"
+        metaPath:
+          type:
+            - string
+            - "null"
     CreatePostRequest:
       type: object
       additionalProperties: false

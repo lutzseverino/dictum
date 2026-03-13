@@ -35,6 +35,8 @@ Use standard verbs whenever the resource model remains clear.
 - `POST` for creates
 - `PATCH` for partial updates
 
+When a `PATCH` endpoint follows JSON Merge Patch semantics, document the request body as `application/merge-patch+json`.
+
 When a state transition does not fit cleanly into CRUD, use an action subresource rather than a generic command endpoint.
 
 Example:
@@ -76,4 +78,3 @@ This allows the contract to express the intended boundary without forcing the im
 - OpenAPI documents remain close to what readers expect from a conventional REST service.
 - Backend code can stay disciplined internally without forcing unconventional HTTP shapes externally.
 - Some operations may eventually need action subresources, but that is still more conventional than a generic command bus endpoint.
-
