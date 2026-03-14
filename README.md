@@ -58,7 +58,7 @@ dictum/
 6. Apply Google Java Format to the API with `pnpm format:api`.
 7. Run API tests with `pnpm test:api`.
 8. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
-9. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script warns and skips only the Sonar scan.
+9. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script can offer Docker-based local setup in an interactive terminal and otherwise warns and skips only the Sonar scan.
 
 ## Content Model
 
