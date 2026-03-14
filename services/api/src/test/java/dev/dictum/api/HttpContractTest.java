@@ -24,9 +24,11 @@ class HttpContractTest {
   private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
-  private static final String POSTS_PATH = path("api", "v1", "posts");
+  private static final String POSTS_SEGMENT = "posts";
+  private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String POSTS_PATH = path("api", "v1", POSTS_SEGMENT);
   private static final String REMOTE_CONTROLS_LATER_PATH =
-      path("api", "v1", "posts", "remote-controls-later");
+      path("api", "v1", POSTS_SEGMENT, "remote-controls-later");
   private static final String SITE_SETTINGS_PATH = path("api", "v1", "settings", "site");
   private static final String GET = "GET";
   private static final String PATCH = "PATCH";
@@ -48,20 +50,20 @@ class HttpContractTest {
     assertThat(posts).isNotNull();
     assertThat(posts.isArray()).isTrue();
     assertThat(posts).hasSize(2);
-    assertThat(posts.get(0).get("slug").asText()).isEqualTo("dictum-begins");
+    assertThat(posts.get(0).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
     assertThat(posts.get(0).get("status").asText()).isEqualTo("published");
     assertThat(posts.get(1).get("slug").asText()).isEqualTo("remote-controls-later");
   }
 
   @Test
   void getPostReturnsTheFullPostRepresentation() throws Exception {
-    HttpResponse<String> response = get(path("api", "v1", "posts", "dictum-begins"));
+    HttpResponse<String> response = get(path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG));
 
     assertThat(response.statusCode()).isEqualTo(200);
 
     PostResponse post = objectMapper.readValue(response.body(), PostResponse.class);
-    assertThat(post.getSlug()).isEqualTo("dictum-begins");
-    assertThat(post.getContentPath()).isEqualTo("posts/dictum-begins/index.md");
+    assertThat(post.getSlug()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(post.getContentPath()).isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/index.md");
     assertThat(post.getHasStylesheet()).isTrue();
     assertThat(post.getBody()).contains("hybrid stack");
   }
