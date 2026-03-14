@@ -21,7 +21,14 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class HttpContractTest {
 
+  private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+  private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
+  private static final String POSTS_PATH = "/api/v1/posts";
+  private static final String REMOTE_CONTROLS_LATER_PATH = "/api/v1/posts/remote-controls-later";
+  private static final String SITE_SETTINGS_PATH = "/api/v1/settings/site";
+  private static final String PATCH = "PATCH";
+  private static final String POST = "POST";
 
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
@@ -29,10 +36,10 @@ class HttpContractTest {
 
   @Test
   void listPostsReturnsPublishedSummaries() throws Exception {
-    HttpResponse<String> response = get("/api/v1/posts");
+    HttpResponse<String> response = get(POSTS_PATH);
 
     assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.headers().firstValue("content-type"))
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(value -> assertThat(value).contains(MediaType.APPLICATION_JSON_VALUE));
 
     JsonNode posts = objectMapper.readTree(response.body());
@@ -75,8 +82,8 @@ class HttpContractTest {
   void createPostReturnsCreatedResourceAndLocationHeader() throws Exception {
     HttpResponse<String> response =
         request(
-            "POST",
-            "/api/v1/posts",
+            POST,
+            POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
             {
@@ -102,8 +109,8 @@ class HttpContractTest {
   void createPostRejectsUnknownRequestFields() throws Exception {
     HttpResponse<String> response =
         request(
-            "POST",
-            "/api/v1/posts",
+            POST,
+            POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
             {
@@ -118,7 +125,7 @@ class HttpContractTest {
             """);
 
     assertThat(response.statusCode()).isEqualTo(400);
-    assertThat(response.headers().firstValue("content-type"))
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
   }
@@ -127,8 +134,8 @@ class HttpContractTest {
   void updatePostAppliesMergePatchThroughTheHttpSurface() throws Exception {
     HttpResponse<String> response =
         request(
-            "PATCH",
-            "/api/v1/posts/remote-controls-later",
+            PATCH,
+            REMOTE_CONTROLS_LATER_PATH,
             MERGE_PATCH_JSON,
             """
             {
@@ -150,13 +157,13 @@ class HttpContractTest {
   void updatePostRejectsWrongMediaType() throws Exception {
     HttpResponse<String> response =
         request(
-            "PATCH",
-            "/api/v1/posts/remote-controls-later",
+            PATCH,
+            REMOTE_CONTROLS_LATER_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             "{\"title\":\"Wrong media type\"}");
 
     assertThat(response.statusCode()).isEqualTo(415);
-    assertThat(response.headers().firstValue("content-type"))
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
   }
@@ -167,7 +174,7 @@ class HttpContractTest {
     String payload = "{\"body\":\"" + largeBody + "\"}";
 
     HttpResponse<String> response =
-        request("PATCH", "/api/v1/posts/remote-controls-later", MERGE_PATCH_JSON, payload);
+        request(PATCH, REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, payload);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -179,7 +186,7 @@ class HttpContractTest {
   @Test
   void publishPostTransitionsTheDraftToPublished() throws Exception {
     HttpResponse<String> response =
-        request("POST", "/api/v1/posts/remote-controls-later/publish", null, null);
+        request(POST, REMOTE_CONTROLS_LATER_PATH + "/publish", null, null);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -190,7 +197,7 @@ class HttpContractTest {
 
   @Test
   void getSiteSettingsReturnsTheCurrentSiteValues() throws Exception {
-    HttpResponse<String> response = get("/api/v1/settings/site");
+    HttpResponse<String> response = get(SITE_SETTINGS_PATH);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -204,8 +211,8 @@ class HttpContractTest {
   void updateSiteSettingsReturnsTheUpdatedRepresentation() throws Exception {
     HttpResponse<String> response =
         request(
-            "PATCH",
-            "/api/v1/settings/site",
+            PATCH,
+            SITE_SETTINGS_PATH,
             MERGE_PATCH_JSON,
             """
             {
@@ -255,7 +262,7 @@ class HttpContractTest {
           default -> builder.GET().build();
         };
 
-    return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
   }
 
   private String baseUrl() {

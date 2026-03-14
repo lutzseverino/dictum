@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class PostQueryServiceTest {
 
+  private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+
   private PostQueryService postQueryService;
 
   @BeforeEach
@@ -27,18 +29,19 @@ class PostQueryServiceTest {
     List<PostSummary> responses = postQueryService.listResponses();
 
     assertThat(responses).hasSize(2);
-    assertThat(responses.get(0).getSlug()).isEqualTo("dictum-begins");
+    assertThat(responses.get(0).getSlug()).isEqualTo(DICTUM_BEGINS_SLUG);
     assertThat(responses.get(0).getStatus().getValue()).isEqualTo("published");
     assertThat(responses.get(1).getSlug()).isEqualTo("remote-controls-later");
   }
 
   @Test
   void getResponseReturnsTheSeededPostDetail() {
-    PostResponse response = postQueryService.getResponse("dictum-begins");
+    PostResponse response = postQueryService.getResponse(DICTUM_BEGINS_SLUG);
 
-    assertThat(response.getSlug()).isEqualTo("dictum-begins");
-    assertThat(response.getContentPath()).isEqualTo("posts/dictum-begins/index.md");
-    assertThat(response.getStylesheetPath()).isEqualTo("posts/dictum-begins/style.css");
+    assertThat(response.getSlug()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(response.getContentPath()).isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/index.md");
+    assertThat(response.getStylesheetPath())
+        .isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/style.css");
   }
 
   @Test

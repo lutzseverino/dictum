@@ -27,6 +27,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PostCommandServiceTest {
 
+  private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String REMOTE_CONTROLS_LATER_SLUG = "remote-controls-later";
+  private static final String NOTES_ON_REMOTE_EDITING_SLUG = "notes-on-remote-editing";
+  private static final String TITLE_FIELD = "title";
+  private static final String EXCERPT_FIELD = "excerpt";
+  private static final String TEMPLATE_FIELD = "template";
+  private static final String TAGS_FIELD = "tags";
+  private static final String BODY_FIELD = "body";
+  private static final String STYLESHEET_FIELD = "stylesheet";
+  private static final String REMOVE_STYLESHEET_FIELD = "removeStylesheet";
+  private static final String ADMIN_TAG = "admin";
+
   @Mock private MergePatchBodyAccessor mergePatchBodyAccessor;
 
   private InMemoryPostStore postStore;
@@ -44,7 +56,7 @@ class PostCommandServiceTest {
     CreatePostRequest request =
         new CreatePostRequest(
                 "Notes on Remote Editing",
-                "notes-on-remote-editing",
+                NOTES_ON_REMOTE_EDITING_SLUG,
                 "First thoughts on a phone-first publishing workflow.",
                 PostTemplate.NOTE,
                 List.of("product", "mobile"),
@@ -53,12 +65,14 @@ class PostCommandServiceTest {
 
     PostResponse response = postCommandService.create(request);
 
-    assertThat(response.getSlug()).isEqualTo("notes-on-remote-editing");
+    assertThat(response.getSlug()).isEqualTo(NOTES_ON_REMOTE_EDITING_SLUG);
     assertThat(response.getStatus()).isEqualTo(PostStatus.DRAFT);
     assertThat(response.getHasStylesheet()).isTrue();
-    assertThat(response.getContentPath()).isEqualTo("posts/notes-on-remote-editing/index.md");
-    assertThat(response.getStylesheetPath()).isEqualTo("posts/notes-on-remote-editing/style.css");
-    assertThat(postStore.findBySlug("notes-on-remote-editing")).isPresent();
+    assertThat(response.getContentPath())
+        .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/index.md");
+    assertThat(response.getStylesheetPath())
+        .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/style.css");
+    assertThat(postStore.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
   }
 
   @Test
@@ -66,7 +80,7 @@ class PostCommandServiceTest {
     CreatePostRequest request =
         new CreatePostRequest(
             "Duplicate",
-            "dictum-begins",
+            DICTUM_BEGINS_SLUG,
             "Already exists.",
             PostTemplate.ESSAY,
             List.of("architecture"),
@@ -74,44 +88,44 @@ class PostCommandServiceTest {
 
     assertThatThrownBy(() -> postCommandService.create(request))
         .isInstanceOf(PostConflictException.class)
-        .hasMessage("A post already exists for slug dictum-begins");
+        .hasMessage("A post already exists for slug " + DICTUM_BEGINS_SLUG);
   }
 
   @Test
   void updateChangesOnlyTheProvidedFields() {
-    when(mergePatchBodyAccessor.containsField("title")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("excerpt")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("template")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("tags")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("body")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("stylesheet")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("removeStylesheet")).thenReturn(false);
-    when(mergePatchBodyAccessor.isExplicitNull("tags")).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(true);
+    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(true);
+    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.isExplicitNull(TAGS_FIELD)).thenReturn(false);
 
     UpdatePostRequest request =
-        new UpdatePostRequest().title("Remote Controls, Sooner").tags(List.of("admin", "api"));
+        new UpdatePostRequest().title("Remote Controls, Sooner").tags(List.of(ADMIN_TAG, "api"));
 
-    PostResponse response = postCommandService.update("remote-controls-later", request);
+    PostResponse response = postCommandService.update(REMOTE_CONTROLS_LATER_SLUG, request);
 
     assertThat(response.getTitle()).isEqualTo("Remote Controls, Sooner");
     assertThat(response.getExcerpt())
         .isEqualTo("The admin experience will later own publish and settings mutations.");
-    assertThat(response.getTags()).containsExactly("admin", "api");
-    verify(mergePatchBodyAccessor).isExplicitNull("tags");
+    assertThat(response.getTags()).containsExactly(ADMIN_TAG, "api");
+    verify(mergePatchBodyAccessor).isExplicitNull(TAGS_FIELD);
   }
 
   @Test
   void updateRemovesTheStylesheetWhenTheFieldIsPatchedToNull() {
-    when(mergePatchBodyAccessor.containsField("title")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("excerpt")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("template")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("tags")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("body")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("stylesheet")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("removeStylesheet")).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(true);
+    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
 
     PostResponse response =
-        postCommandService.update("dictum-begins", new UpdatePostRequest().stylesheet(null));
+        postCommandService.update(DICTUM_BEGINS_SLUG, new UpdatePostRequest().stylesheet(null));
 
     assertThat(response.getHasStylesheet()).isFalse();
     assertThat(response.getStylesheetPath()).isNull();
@@ -119,26 +133,26 @@ class PostCommandServiceTest {
 
   @Test
   void updateRejectsExplicitNullTags() {
-    when(mergePatchBodyAccessor.containsField("title")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("excerpt")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("template")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("tags")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("body")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("stylesheet")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("removeStylesheet")).thenReturn(false);
-    when(mergePatchBodyAccessor.isExplicitNull("tags")).thenReturn(true);
+    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(true);
+    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
+    when(mergePatchBodyAccessor.isExplicitNull(TAGS_FIELD)).thenReturn(true);
 
     assertThatThrownBy(
             () ->
                 postCommandService.update(
-                    "remote-controls-later", new UpdatePostRequest().tags(List.of("admin"))))
+                    REMOTE_CONTROLS_LATER_SLUG, new UpdatePostRequest().tags(List.of(ADMIN_TAG))))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field tags cannot be null");
   }
 
   @Test
   void publishTransitionsTheDraftToPublished() {
-    PostResponse response = postCommandService.publish("remote-controls-later");
+    PostResponse response = postCommandService.publish(REMOTE_CONTROLS_LATER_SLUG);
 
     assertThat(response.getStatus()).isEqualTo(PostStatus.PUBLISHED);
     assertThat(response.getPublishedAt()).isNotNull();
@@ -146,9 +160,9 @@ class PostCommandServiceTest {
 
   @Test
   void publishRejectsAlreadyPublishedPosts() {
-    assertThatThrownBy(() -> postCommandService.publish("dictum-begins"))
+    assertThatThrownBy(() -> postCommandService.publish(DICTUM_BEGINS_SLUG))
         .isInstanceOf(PostConflictException.class)
-        .hasMessage("Post dictum-begins is already published");
+        .hasMessage("Post " + DICTUM_BEGINS_SLUG + " is already published");
   }
 
   @Test

@@ -17,13 +17,16 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 class ApiProblemHandlerTest {
 
+  private static final String BAD_REQUEST_TITLE = "Bad request";
+  private static final String POST_PATH = "/api/v1/posts/dictum-begins";
+
   private ApiProblemHandler apiProblemHandler;
   private MockHttpServletRequest request;
 
   @BeforeEach
   void setUp() {
     apiProblemHandler = new ApiProblemHandler();
-    request = new MockHttpServletRequest("PATCH", "/api/v1/posts/dictum-begins");
+    request = new MockHttpServletRequest("PATCH", POST_PATH);
   }
 
   @Test
@@ -35,7 +38,7 @@ class ApiProblemHandlerTest {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     assertThat(response.getHeaders().getContentType())
         .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
-    assertProblem(response.getBody(), "Resource not found", 404, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), "Resource not found", 404, POST_PATH);
   }
 
   @Test
@@ -45,7 +48,7 @@ class ApiProblemHandlerTest {
             new PostConflictException("Post dictum-begins is already published"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-    assertProblem(response.getBody(), "Conflict", 409, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), "Conflict", 409, POST_PATH);
   }
 
   @Test
@@ -55,7 +58,7 @@ class ApiProblemHandlerTest {
             new InvalidPatchRequestException("Field subtitle cannot be null"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), "Bad request", 400, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
   }
 
   @Test
@@ -65,7 +68,7 @@ class ApiProblemHandlerTest {
             new InvalidPostRequestException("Tags must not contain null values"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), "Bad request", 400, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
   }
 
   @Test
@@ -75,7 +78,7 @@ class ApiProblemHandlerTest {
             new HttpMediaTypeNotSupportedException("application/json"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    assertProblem(response.getBody(), "Unsupported media type", 415, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), "Unsupported media type", 415, POST_PATH);
   }
 
   @Test
@@ -86,7 +89,7 @@ class ApiProblemHandlerTest {
             request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), "Bad request", 400, "/api/v1/posts/dictum-begins");
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
   }
 
   private void assertProblem(
