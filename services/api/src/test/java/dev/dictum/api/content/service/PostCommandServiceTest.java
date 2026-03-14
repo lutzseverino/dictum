@@ -2,20 +2,24 @@ package dev.dictum.api.content.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapperImpl;
 import dev.dictum.api.content.repository.InMemoryPostStore;
+import dev.dictum.api.content.rule.PostPatchRequiredValuesRule;
+import dev.dictum.api.content.rule.PostPatchValidator;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
 import dev.dictum.api.generated.model.UpdatePostRequest;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
-import dev.dictum.api.web.patch.MergePatchBodyAccessor;
+import dev.dictum.api.web.patch.MergePatchDocument;
+import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,16 +34,10 @@ class PostCommandServiceTest {
   private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
   private static final String REMOTE_CONTROLS_LATER_SLUG = "remote-controls-later";
   private static final String NOTES_ON_REMOTE_EDITING_SLUG = "notes-on-remote-editing";
-  private static final String TITLE_FIELD = "title";
-  private static final String EXCERPT_FIELD = "excerpt";
-  private static final String TEMPLATE_FIELD = "template";
-  private static final String TAGS_FIELD = "tags";
-  private static final String BODY_FIELD = "body";
-  private static final String STYLESHEET_FIELD = "stylesheet";
-  private static final String REMOVE_STYLESHEET_FIELD = "removeStylesheet";
   private static final String ADMIN_TAG = "admin";
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  @Mock private MergePatchBodyAccessor mergePatchBodyAccessor;
+  @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   private InMemoryPostStore postStore;
   private PostCommandService postCommandService;
@@ -48,7 +46,11 @@ class PostCommandServiceTest {
   void setUp() {
     postStore = newPostStore();
     postCommandService =
-        new PostCommandService(postStore, new PostApiMapperImpl(), mergePatchBodyAccessor);
+        new PostCommandService(
+            postStore,
+            new PostApiMapperImpl(),
+            new PostPatchValidator(List.of(new PostPatchRequiredValuesRule())),
+            mergePatchDocumentAccessor);
   }
 
   @Test
@@ -93,14 +95,9 @@ class PostCommandServiceTest {
 
   @Test
   void updateChangesOnlyTheProvidedFields() {
-    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.isExplicitNull(TAGS_FIELD)).thenReturn(false);
+    when(mergePatchDocumentAccessor.currentDocument())
+        .thenReturn(
+            patchDocument("{\"title\":\"Remote Controls, Sooner\",\"tags\":[\"admin\",\"api\"]}"));
 
     UpdatePostRequest request =
         new UpdatePostRequest().title("Remote Controls, Sooner").tags(List.of(ADMIN_TAG, "api"));
@@ -111,18 +108,12 @@ class PostCommandServiceTest {
     assertThat(response.getExcerpt())
         .isEqualTo("The admin experience will later own publish and settings mutations.");
     assertThat(response.getTags()).containsExactly(ADMIN_TAG, "api");
-    verify(mergePatchBodyAccessor).isExplicitNull(TAGS_FIELD);
   }
 
   @Test
   void updateRemovesTheStylesheetWhenTheFieldIsPatchedToNull() {
-    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
+    when(mergePatchDocumentAccessor.currentDocument())
+        .thenReturn(patchDocument("{\"stylesheet\":null}"));
 
     PostResponse response =
         postCommandService.update(DICTUM_BEGINS_SLUG, new UpdatePostRequest().stylesheet(null));
@@ -133,14 +124,7 @@ class PostCommandServiceTest {
 
   @Test
   void updateRejectsExplicitNullTags() {
-    when(mergePatchBodyAccessor.containsField(TITLE_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(EXCERPT_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TEMPLATE_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(TAGS_FIELD)).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField(BODY_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(STYLESHEET_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField(REMOVE_STYLESHEET_FIELD)).thenReturn(false);
-    when(mergePatchBodyAccessor.isExplicitNull(TAGS_FIELD)).thenReturn(true);
+    when(mergePatchDocumentAccessor.currentDocument()).thenReturn(patchDocument("{\"tags\":null}"));
 
     assertThatThrownBy(
             () ->
@@ -171,6 +155,14 @@ class PostCommandServiceTest {
             () -> postCommandService.update("unknown-slug", new UpdatePostRequest().title("Nope")))
         .isInstanceOf(PostNotFoundException.class)
         .hasMessage("No post exists for slug unknown-slug");
+  }
+
+  private MergePatchDocument patchDocument(String json) {
+    try {
+      return new MergePatchDocument(OBJECT_MAPPER.readTree(json));
+    } catch (IOException exception) {
+      throw new IllegalStateException("Failed to create merge patch document for tests", exception);
+    }
   }
 
   private InMemoryPostStore newPostStore() {

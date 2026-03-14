@@ -34,6 +34,7 @@ Dictum will enforce these backend boundaries:
 - Backend packages are organized by domain first, not by resource path.
 - Cross-cutting HTTP concerns stay in a dedicated web layer instead of being attached to one domain arbitrarily.
 - Services are grouped by domain first, then split into query and command responsibilities as needed.
+- Domain-local mutation rules may live in a `rule` package when they should be shared within a domain without becoming cross-domain infrastructure.
 - Read flows prefer projections or read models mapped to DTOs.
 - Query services use `getResponse(...)` for singular reads and `listResponses(...)` for collection reads.
 - Command services use lean, resource-scoped verbs for mutations such as `create(...)`, `update(...)`, and `publish(...)`.

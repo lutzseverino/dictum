@@ -3,18 +3,18 @@ package dev.dictum.api.content.service;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapper;
-import dev.dictum.api.content.model.vo.PostPatchFields;
+import dev.dictum.api.content.model.vo.PostPatch;
 import dev.dictum.api.content.model.vo.PostSlug;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.model.vo.PostTags;
 import dev.dictum.api.content.repository.InMemoryPostStore;
+import dev.dictum.api.content.rule.PostPatchValidator;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.UpdatePostRequest;
-import dev.dictum.api.web.error.InvalidPatchRequestException;
-import dev.dictum.api.web.patch.MergePatchBodyAccessor;
-import dev.dictum.api.web.patch.MergePatchFieldRules;
+import dev.dictum.api.web.patch.MergePatchDocument;
+import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 
@@ -28,15 +28,18 @@ public class PostCommandService {
 
   private final InMemoryPostStore postStore;
   private final PostApiMapper postApiMapper;
-  private final MergePatchBodyAccessor mergePatchBodyAccessor;
+  private final PostPatchValidator postPatchValidator;
+  private final MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   PostCommandService(
       InMemoryPostStore postStore,
       PostApiMapper postApiMapper,
-      MergePatchBodyAccessor mergePatchBodyAccessor) {
+      PostPatchValidator postPatchValidator,
+      MergePatchDocumentAccessor mergePatchDocumentAccessor) {
     this.postStore = postStore;
     this.postApiMapper = postApiMapper;
-    this.mergePatchBodyAccessor = mergePatchBodyAccessor;
+    this.postPatchValidator = postPatchValidator;
+    this.mergePatchDocumentAccessor = mergePatchDocumentAccessor;
   }
 
   public PostResponse create(CreatePostRequest request) {
@@ -66,11 +69,10 @@ public class PostCommandService {
 
   public PostResponse update(String slug, UpdatePostRequest request) {
     PostState current = requireState(slug);
-    PostPatchFields patchFields = readPatchFields();
-    validateUpdate(request, patchFields);
+    PostPatch patch = readPatch(request);
+    postPatchValidator.validate(patch);
 
-    return postApiMapper.toResponse(
-        postStore.save(updatedState(slug, current, request, patchFields)));
+    return postApiMapper.toResponse(postStore.save(updatedState(slug, current, patch)));
   }
 
   public PostResponse publish(String slug) {
@@ -118,70 +120,36 @@ public class PostCommandService {
     return postAssetPath(slug, META_FILENAME);
   }
 
-  private PostPatchFields readPatchFields() {
-    mergePatchBodyAccessor.requireAnyField();
-
-    return new PostPatchFields(
-        mergePatchBodyAccessor.containsField("title"),
-        mergePatchBodyAccessor.containsField("excerpt"),
-        mergePatchBodyAccessor.containsField("template"),
-        mergePatchBodyAccessor.containsField("tags"),
-        mergePatchBodyAccessor.containsField("body"),
-        mergePatchBodyAccessor.containsField("stylesheet"),
-        mergePatchBodyAccessor.containsField("removeStylesheet"));
+  private PostPatch readPatch(UpdatePostRequest request) {
+    MergePatchDocument document = mergePatchDocumentAccessor.currentDocument();
+    return PostPatch.from(request, document);
   }
 
-  private void validateUpdate(UpdatePostRequest request, PostPatchFields patchFields) {
-    MergePatchFieldRules.requireNonNullWhenPresent(
-        "title", patchFields.title(), request.getTitle());
-    MergePatchFieldRules.requireNonNullWhenPresent(
-        "excerpt", patchFields.excerpt(), request.getExcerpt());
-    MergePatchFieldRules.requireNonNullWhenPresent(
-        "template", patchFields.template(), request.getTemplate());
-    MergePatchFieldRules.requireNonNullWhenPresent("body", patchFields.body(), request.getBody());
-    MergePatchFieldRules.requireNonNullWhenPresent(
-        "removeStylesheet", patchFields.removeStylesheet(), request.getRemoveStylesheet());
-
-    if (patchFields.tags() && mergePatchBodyAccessor.isExplicitNull("tags")) {
-      throw new InvalidPatchRequestException("Field tags cannot be null");
-    }
-  }
-
-  private PostState updatedState(
-      String slug, PostState current, UpdatePostRequest request, PostPatchFields patchFields) {
-    String stylesheetPath =
-        resolveStylesheetPath(slug, current.stylesheetPath(), request, patchFields);
+  private PostState updatedState(String slug, PostState current, PostPatch patch) {
+    String stylesheetPath = resolveStylesheetPath(slug, current.stylesheetPath(), patch);
 
     return new PostState(
         current.slug(),
-        patchFields.title() ? request.getTitle() : current.title(),
-        patchFields.excerpt() ? request.getExcerpt() : current.excerpt(),
+        patch.title().isPresent() ? patch.title().value() : current.title(),
+        patch.excerpt().isPresent() ? patch.excerpt().value() : current.excerpt(),
         current.status(),
-        patchFields.template() ? request.getTemplate() : current.template(),
+        patch.template().isPresent() ? patch.template().value() : current.template(),
         current.publishedAt(),
-        patchFields.tags() ? new PostTags(request.getTags()).values() : current.tags(),
+        patch.tags().isPresent() ? new PostTags(patch.tags().value()).values() : current.tags(),
         stylesheetPath != null,
-        patchFields.body() ? request.getBody() : current.body(),
+        patch.body().isPresent() ? patch.body().value() : current.body(),
         current.contentPath(),
         stylesheetPath,
         current.metaPath());
   }
 
-  private String resolveStylesheetPath(
-      String slug,
-      String currentStylesheetPath,
-      UpdatePostRequest request,
-      PostPatchFields patchFields) {
-    if (Boolean.TRUE.equals(request.getRemoveStylesheet())) {
+  private String resolveStylesheetPath(String slug, String currentStylesheetPath, PostPatch patch) {
+    if (Boolean.TRUE.equals(patch.removeStylesheet().value())) {
       return null;
     }
 
-    if (patchFields.stylesheet()) {
-      return request.getStylesheet() != null ? stylesheetPathFor(slug) : null;
-    }
-
-    if (request.getStylesheet() != null) {
-      return stylesheetPathFor(slug);
+    if (patch.stylesheet().isPresent()) {
+      return patch.stylesheet().value() != null ? stylesheetPathFor(slug) : null;
     }
 
     return currentStylesheetPath;

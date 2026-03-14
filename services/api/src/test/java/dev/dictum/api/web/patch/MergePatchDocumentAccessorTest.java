@@ -13,9 +13,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
-class MergePatchBodyAccessorTest {
+class MergePatchDocumentAccessorTest {
 
-  private final MergePatchBodyAccessor mergePatchBodyAccessor = new MergePatchBodyAccessor();
+  private final MergePatchDocumentAccessor mergePatchDocumentAccessor =
+      new MergePatchDocumentAccessor();
 
   @AfterEach
   void tearDown() {
@@ -23,28 +24,29 @@ class MergePatchBodyAccessorTest {
   }
 
   @Test
-  void containsFieldAndExplicitNullReflectTheCurrentPatchDocument() {
+  void currentDocumentReflectsTheCurrentPatchDocument() {
     setCurrentRequest("{\"title\":\"Updated\",\"stylesheet\":null}");
+    MergePatchDocument document = mergePatchDocumentAccessor.currentDocument();
 
-    assertThat(mergePatchBodyAccessor.containsField("title")).isTrue();
-    assertThat(mergePatchBodyAccessor.containsField("body")).isFalse();
-    assertThat(mergePatchBodyAccessor.isExplicitNull("stylesheet")).isTrue();
+    assertThat(document.field("title", "Updated").isPresent()).isTrue();
+    assertThat(document.field("body", "ignored").isPresent()).isFalse();
+    assertThat(document.field("stylesheet", null).isExplicitNull()).isTrue();
   }
 
   @Test
-  void requireAnyFieldRejectsAnEmptyPatchDocument() {
+  void currentDocumentRejectsAnEmptyPatchDocument() {
     setCurrentRequest("{}");
 
-    assertThatThrownBy(mergePatchBodyAccessor::requireAnyField)
+    assertThatThrownBy(mergePatchDocumentAccessor::currentDocument)
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("PATCH requests must include at least one field");
   }
 
   @Test
-  void requireAnyFieldRejectsNonObjectBodies() {
+  void currentDocumentRejectsNonObjectBodies() {
     setCurrentRequest("[]");
 
-    assertThatThrownBy(mergePatchBodyAccessor::requireAnyField)
+    assertThatThrownBy(mergePatchDocumentAccessor::currentDocument)
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("PATCH requests must use a JSON object body");
   }
@@ -54,7 +56,7 @@ class MergePatchBodyAccessorTest {
     MockHttpServletRequest request = new MockHttpServletRequest();
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-    assertThatThrownBy(() -> mergePatchBodyAccessor.containsField("title"))
+    assertThatThrownBy(mergePatchDocumentAccessor::currentDocument)
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("PATCH request body could not be inspected");
   }
