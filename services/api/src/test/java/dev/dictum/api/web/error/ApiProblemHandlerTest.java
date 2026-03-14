@@ -18,7 +18,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 class ApiProblemHandlerTest {
 
   private static final String BAD_REQUEST_TITLE = "Bad request";
-  private static final String POST_PATH = "/api/v1/posts/dictum-begins";
+  private static final String POST_PATH = path("api", "v1", "posts", "dictum-begins");
 
   private ApiProblemHandler apiProblemHandler;
   private MockHttpServletRequest request;
@@ -98,5 +98,9 @@ class ApiProblemHandlerTest {
     assertThat(problemDetails.getTitle()).isEqualTo(title);
     assertThat(problemDetails.getStatus()).isEqualTo(status);
     assertThat(problemDetails.getInstance()).isEqualTo(instance);
+  }
+
+  private static String path(String... segments) {
+    return "/" + String.join("/", segments);
   }
 }
