@@ -1,12 +1,17 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.service;
 
+import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.content.mapper.PostApiMapper;
+import dev.dictum.api.content.model.vo.PostSlug;
+import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.repository.InMemoryPostStore;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-class PostQueryService {
+public class PostQueryService {
 
   private final InMemoryPostStore postStore;
   private final PostApiMapper postApiMapper;
@@ -21,12 +26,13 @@ class PostQueryService {
   }
 
   public PostResponse getResponse(String slug) {
-    PostInputRules.requireValidSlug(slug);
+    String validatedSlug = new PostSlug(slug).value();
 
     PostState state =
         postStore
-            .findBySlug(slug)
-            .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + slug));
+            .findBySlug(validatedSlug)
+            .orElseThrow(
+                () -> new PostNotFoundException("No post exists for slug " + validatedSlug));
 
     return postApiMapper.toResponse(state);
   }

@@ -1,8 +1,8 @@
-package dev.dictum.api.api;
+package dev.dictum.api.web.patch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.dictum.api.settings.InvalidPatchRequestException;
+import dev.dictum.api.web.error.InvalidPatchRequestException;
 import java.io.IOException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;

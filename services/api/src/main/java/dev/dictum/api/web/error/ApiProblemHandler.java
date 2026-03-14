@@ -1,10 +1,9 @@
-package dev.dictum.api.api;
+package dev.dictum.api.web.error;
 
+import dev.dictum.api.content.error.InvalidPostRequestException;
+import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.generated.model.ProblemDetails;
-import dev.dictum.api.posts.InvalidPostRequestException;
-import dev.dictum.api.posts.PostConflictException;
-import dev.dictum.api.posts.PostNotFoundException;
-import dev.dictum.api.settings.InvalidPatchRequestException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import org.springframework.http.HttpStatus;

@@ -1,10 +1,12 @@
-package dev.dictum.api.settings;
+package dev.dictum.api.site.service;
 
 import dev.dictum.api.generated.model.SiteSettingsResponse;
+import dev.dictum.api.site.mapper.SiteSettingsApiMapper;
+import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
 import org.springframework.stereotype.Service;
 
 @Service
-class SiteSettingsQueryService {
+public class SiteSettingsQueryService {
 
   private final InMemorySiteSettingsStore siteSettingsStore;
   private final SiteSettingsApiMapper siteSettingsApiMapper;
