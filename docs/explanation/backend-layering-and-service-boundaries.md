@@ -21,6 +21,28 @@ Without an explicit layering model, entity shapes tend to leak upward into servi
 
 Dictum uses a strict outward-facing DTO boundary and keeps controllers deliberately lean.
 
+### Package Ownership
+
+Backend code is organized by domain first, not by resource path.
+
+- `content` owns post and content-editing concerns.
+- `site` owns site-level settings concerns.
+- `web` owns cross-cutting HTTP infrastructure such as exception handling, request filters, and raw merge-patch body inspection.
+- Domain boundaries are chosen by backend meaning, not by URL shape. Domain does not equal resource.
+
+Within a domain, Dictum may use these standard subpackages as needed:
+
+- `controller`
+- `service`
+- `mapper`
+- `model.payload`
+- `model.vo`
+- `model.projection`
+- `model.entity`
+- `repository`
+
+Not every subpackage needs to exist immediately. Empty layers should not be created just to satisfy the template. At the current stage, generated OpenAPI models act as the external payload layer, so some domains will not yet contain handwritten `model.payload` types.
+
 ### Controllers
 
 Controllers are endpoint adapters only.
@@ -43,18 +65,18 @@ Dictum prefers explicit query and command responsibilities over a generic shared
 
 ### Service Ownership
 
-Services are grouped by resource first, then by query versus command responsibility.
+Services are grouped by domain first, then by resource and query versus command responsibility.
 
-- Start with one query service and one command service per resource when both are needed.
+- Start with one query service and one command service per resource within a domain when both are needed.
 - Do not create a separate top-level service for every endpoint action by default.
 - Do not keep all behavior in one catch-all resource service when query and command responsibilities are already distinct.
 
 Preferred shapes:
 
-- `PostQueryService`
-- `PostCommandService`
-- `SiteSettingsQueryService`
-- `SiteSettingsCommandService`
+- `content.service.PostQueryService`
+- `content.service.PostCommandService`
+- `site.service.SiteSettingsQueryService`
+- `site.service.SiteSettingsCommandService`
 
 This keeps resource ownership obvious while still separating read and write concerns.
 
@@ -100,15 +122,26 @@ This keeps HTTP contracts stable even when persistence models evolve.
 
 MapStruct is the preferred mapping mechanism for backend DTO assembly.
 
+- Place MapStruct mappers in a domain-local `mapper` package such as `content.mapper` or `site.mapper`.
 - Use MapStruct to map projections to response DTOs.
 - Use MapStruct to map entities to response DTOs when a write flow needs a response payload.
 - Avoid ad hoc controller-level mapping.
 
 The mapping layer is allowed to know about entities and projections, but controllers and external contracts are not.
 
+### Readability Conventions
+
+Dictum does not standardize region comments in backend classes.
+
+- Prefer smaller collaborators and domain-local value objects over large grouped classes.
+- Prefer fixed method ordering over editor-specific region markers.
+- When logic becomes mixed, extract a dedicated collaborator instead of using section markers to hold the class together.
+- Prefer the leanest unambiguous helper method names inside a class. Avoid redundant suffixes like `Request`, `Response`, or `Dto` when the class context already makes them obvious.
+
 ## Consequences
 
 - Endpoint navigation stays simple because each controller method points to one service method.
+- Domain ownership stays clear even as new resources are added.
 - Persistence models can evolve without directly breaking API contracts.
 - Read paths gain a natural home for projections and read models.
 - Naming stays consistent across services through `getResponse(...)` and `listResponses(...)`.

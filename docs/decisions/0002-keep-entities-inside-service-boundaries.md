@@ -21,6 +21,8 @@ Dictum is building a backend control plane that will eventually expose multiple 
 
 There was also alignment on keeping controllers minimal and using consistent service naming for read endpoints.
 
+The backend also needs a scalable package structure so future resources do not force repeated reshaping of the tree.
+
 ## Decision
 
 Dictum will enforce these backend boundaries:
@@ -29,17 +31,21 @@ Dictum will enforce these backend boundaries:
 - Controllers accept and return DTOs only.
 - Public service methods return DTOs, not entities.
 - Entities remain internal to persistence and service implementation details.
-- Services are grouped by resource first, then split into query and command responsibilities as needed.
+- Backend packages are organized by domain first, not by resource path.
+- Cross-cutting HTTP concerns stay in a dedicated web layer instead of being attached to one domain arbitrarily.
+- Services are grouped by domain first, then split into query and command responsibilities as needed.
 - Read flows prefer projections or read models mapped to DTOs.
 - Query services use `getResponse(...)` for singular reads and `listResponses(...)` for collection reads.
 - Command services use lean, resource-scoped verbs for mutations such as `create(...)`, `update(...)`, and `publish(...)`.
-- MapStruct is the preferred mapping approach between projections/entities and DTOs.
+- MapStruct is the preferred mapping approach between projections/entities and DTOs, with mappers owned by a domain-local `mapper` package.
+- Region comments are not a backend structuring convention; extraction and method order should carry readability instead.
 
 ## Consequences
 
 - Backend contracts remain decoupled from persistence structure.
 - Controller classes stay easy to scan and document.
 - Service APIs become predictable across resources.
+- Domain ownership remains stable as new resources are added under broader backend concerns.
 - Query and command paths are clearer than a generic CRUD abstraction.
 - The service layer avoids both a giant catch-all resource service and a one-class-per-action explosion.
 - The project accepts extra mapper and DTO boilerplate in exchange for stronger boundaries.

@@ -1,5 +1,6 @@
-package dev.dictum.api.posts;
+package dev.dictum.api.content.repository;
 
+import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
 import java.time.LocalDate;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
-class InMemoryPostStore {
+public class InMemoryPostStore {
 
   private final Map<String, PostState> posts = new LinkedHashMap<>();
 
@@ -58,19 +59,19 @@ class InMemoryPostStore {
     posts.put(secondPost.slug(), secondPost);
   }
 
-  synchronized List<PostState> findAll() {
+  public synchronized List<PostState> findAll() {
     return new ArrayList<>(posts.values());
   }
 
-  synchronized Optional<PostState> findBySlug(String slug) {
+  public synchronized Optional<PostState> findBySlug(String slug) {
     return Optional.ofNullable(posts.get(slug));
   }
 
-  synchronized boolean exists(String slug) {
+  public synchronized boolean exists(String slug) {
     return posts.containsKey(slug);
   }
 
-  synchronized PostState save(PostState state) {
+  public synchronized PostState save(PostState state) {
     posts.put(state.slug(), state);
     return state;
   }
