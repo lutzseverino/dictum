@@ -70,7 +70,7 @@ class HttpContractTest {
 
   @Test
   void getPostReturnsProblemDetailsForUnknownSlug() throws Exception {
-    HttpResponse<String> response = get(path("api", "v1", "posts", "unknown-slug"));
+    HttpResponse<String> response = get(path("api", "v1", POSTS_SEGMENT, "unknown-slug"));
 
     assertThat(response.statusCode()).isEqualTo(404);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
