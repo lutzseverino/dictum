@@ -18,7 +18,7 @@
     "sonar:start": "docker compose up -d",
     "sonar:stop": "docker compose down",
     "sonar:scan": "pnpm exec sonar",
-    "sonar:validate": "node scripts/sonar/validate.mjs"
+    "sonar:validate": "node scripts/quality/validate-with-sonar.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.11",
