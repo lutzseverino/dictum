@@ -2,6 +2,7 @@ package dev.dictum.api.site.service;
 
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
+import dev.dictum.api.site.mapper.SiteSettingsApiMapper;
 import dev.dictum.api.site.model.vo.SiteSettingsPatchFields;
 import dev.dictum.api.site.model.vo.SiteSettingsState;
 import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
@@ -28,7 +29,7 @@ public class SiteSettingsCommandService {
   public SiteSettingsResponse update(UpdateSiteSettingsRequest request) {
     SiteSettingsState current = siteSettingsStore.get();
     SiteSettingsPatchFields patchFields = readPatchFields();
-    validateUpdateRequest(request, patchFields);
+    validateUpdate(request, patchFields);
 
     SiteSettingsState updated =
         new SiteSettingsState(
@@ -48,7 +49,7 @@ public class SiteSettingsCommandService {
         mergePatchBodyAccessor.containsField("motd"));
   }
 
-  private void validateUpdateRequest(
+  private void validateUpdate(
       UpdateSiteSettingsRequest request, SiteSettingsPatchFields patchFields) {
     MergePatchFieldRules.requireNonNullWhenPresent(
         "title", patchFields.title(), request.getTitle());

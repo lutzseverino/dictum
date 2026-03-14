@@ -2,6 +2,7 @@ package dev.dictum.api.content.service;
 
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.content.mapper.PostApiMapper;
 import dev.dictum.api.content.model.vo.PostPatchFields;
 import dev.dictum.api.content.model.vo.PostSlug;
 import dev.dictum.api.content.model.vo.PostState;
@@ -66,7 +67,7 @@ public class PostCommandService {
   public PostResponse update(String slug, UpdatePostRequest request) {
     PostState current = requireState(slug);
     PostPatchFields patchFields = readPatchFields();
-    validateUpdateRequest(request, patchFields);
+    validateUpdate(request, patchFields);
 
     return postApiMapper.toResponse(
         postStore.save(updatedState(slug, current, request, patchFields)));
@@ -130,7 +131,7 @@ public class PostCommandService {
         mergePatchBodyAccessor.containsField("removeStylesheet"));
   }
 
-  private void validateUpdateRequest(UpdatePostRequest request, PostPatchFields patchFields) {
+  private void validateUpdate(UpdatePostRequest request, PostPatchFields patchFields) {
     MergePatchFieldRules.requireNonNullWhenPresent(
         "title", patchFields.title(), request.getTitle());
     MergePatchFieldRules.requireNonNullWhenPresent(
