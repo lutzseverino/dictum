@@ -24,9 +24,11 @@ class HttpContractTest {
   private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
-  private static final String POSTS_PATH = "/api/v1/posts";
-  private static final String REMOTE_CONTROLS_LATER_PATH = "/api/v1/posts/remote-controls-later";
-  private static final String SITE_SETTINGS_PATH = "/api/v1/settings/site";
+  private static final String POSTS_PATH = path("api", "v1", "posts");
+  private static final String REMOTE_CONTROLS_LATER_PATH =
+      path("api", "v1", "posts", "remote-controls-later");
+  private static final String SITE_SETTINGS_PATH = path("api", "v1", "settings", "site");
+  private static final String GET = "GET";
   private static final String PATCH = "PATCH";
   private static final String POST = "POST";
 
@@ -53,7 +55,7 @@ class HttpContractTest {
 
   @Test
   void getPostReturnsTheFullPostRepresentation() throws Exception {
-    HttpResponse<String> response = get("/api/v1/posts/dictum-begins");
+    HttpResponse<String> response = get(path("api", "v1", "posts", "dictum-begins"));
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -66,10 +68,10 @@ class HttpContractTest {
 
   @Test
   void getPostReturnsProblemDetailsForUnknownSlug() throws Exception {
-    HttpResponse<String> response = get("/api/v1/posts/unknown-slug");
+    HttpResponse<String> response = get(path("api", "v1", "posts", "unknown-slug"));
 
     assertThat(response.statusCode()).isEqualTo(404);
-    assertThat(response.headers().firstValue("content-type"))
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
 
@@ -231,7 +233,7 @@ class HttpContractTest {
   }
 
   private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-    return request("GET", path, null, null);
+    return request(GET, path, null, null);
   }
 
   private HttpResponse<String> request(String method, String path, String contentType, String body)
@@ -244,17 +246,17 @@ class HttpContractTest {
 
     HttpRequest request =
         switch (method) {
-          case "POST" ->
+          case POST ->
               builder
                   .POST(
                       body == null
                           ? HttpRequest.BodyPublishers.noBody()
                           : HttpRequest.BodyPublishers.ofString(body))
                   .build();
-          case "PATCH" ->
+          case PATCH ->
               builder
                   .method(
-                      "PATCH",
+                      PATCH,
                       body == null
                           ? HttpRequest.BodyPublishers.noBody()
                           : HttpRequest.BodyPublishers.ofString(body))
@@ -267,5 +269,9 @@ class HttpContractTest {
 
   private String baseUrl() {
     return "http://localhost:" + port;
+  }
+
+  private static String path(String... segments) {
+    return "/" + String.join("/", segments);
   }
 }
