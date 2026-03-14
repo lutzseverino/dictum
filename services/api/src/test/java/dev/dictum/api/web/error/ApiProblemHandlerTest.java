@@ -1,0 +1,106 @@
+package dev.dictum.api.web.error;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import dev.dictum.api.content.error.InvalidPostRequestException;
+import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.generated.model.ProblemDetails;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+
+class ApiProblemHandlerTest {
+
+  private static final String BAD_REQUEST_TITLE = "Bad request";
+  private static final String POST_PATH = path("api", "v1", "posts", "dictum-begins");
+
+  private ApiProblemHandler apiProblemHandler;
+  private MockHttpServletRequest request;
+
+  @BeforeEach
+  void setUp() {
+    apiProblemHandler = new ApiProblemHandler();
+    request = new MockHttpServletRequest("PATCH", POST_PATH);
+  }
+
+  @Test
+  void handlePostNotFoundReturnsNotFoundProblemDetails() {
+    var response =
+        apiProblemHandler.handlePostNotFound(
+            new PostNotFoundException("No post exists for slug unknown-slug"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(response.getHeaders().getContentType())
+        .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+    assertProblem(response.getBody(), "Resource not found", 404, POST_PATH);
+  }
+
+  @Test
+  void handlePostConflictReturnsConflictProblemDetails() {
+    var response =
+        apiProblemHandler.handlePostConflict(
+            new PostConflictException("Post dictum-begins is already published"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    assertProblem(response.getBody(), "Conflict", 409, POST_PATH);
+  }
+
+  @Test
+  void handleInvalidPatchReturnsBadRequestProblemDetails() {
+    var response =
+        apiProblemHandler.handleInvalidPatch(
+            new InvalidPatchRequestException("Field subtitle cannot be null"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+  }
+
+  @Test
+  void handleInvalidPostRequestReturnsBadRequestProblemDetails() {
+    var response =
+        apiProblemHandler.handleInvalidPostRequest(
+            new InvalidPostRequestException("Tags must not contain null values"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+  }
+
+  @Test
+  void handleUnsupportedMediaTypeReturnsProblemDetails() {
+    var response =
+        apiProblemHandler.handleUnsupportedMediaType(
+            new HttpMediaTypeNotSupportedException("application/json"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    assertProblem(response.getBody(), "Unsupported media type", 415, POST_PATH);
+  }
+
+  @Test
+  void handleBadRequestReturnsProblemDetails() {
+    var response =
+        apiProblemHandler.handleBadRequest(
+            new HttpMessageNotReadableException("Malformed JSON", (HttpInputMessage) null),
+            request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+  }
+
+  private void assertProblem(
+      ProblemDetails problemDetails, String title, int status, String instance) {
+    assertThat(problemDetails).isNotNull();
+    assertThat(problemDetails.getTitle()).isEqualTo(title);
+    assertThat(problemDetails.getStatus()).isEqualTo(status);
+    assertThat(problemDetails.getInstance()).isEqualTo(instance);
+  }
+
+  private static String path(String... segments) {
+    return "/" + String.join("/", segments);
+  }
+}
