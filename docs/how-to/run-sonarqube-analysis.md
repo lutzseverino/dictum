@@ -45,7 +45,11 @@ Use this guide when you want Dictum's existing build validations plus a SonarQub
 
 - The repository includes a `SonarQube` workflow for `master`.
 - It runs only when the repository variable `SONAR_HOST_URL` and the secret `SONAR_TOKEN` are configured.
-- For a self-hosted Community Build setup, point `SONAR_HOST_URL` at the reachable SonarQube server.
+- GitHub-hosted runners must be able to reach the SonarQube server over the network.
+- `http://localhost:9000` works for local scans on your machine, but not for GitHub-hosted runners.
+- If you want GitHub Actions to scan against a self-hosted Community Build instance, use either:
+  - a network-reachable SonarQube host, or
+  - a self-hosted GitHub runner that can reach the local SonarQube instance
 
 ## Verification
 
