@@ -34,6 +34,7 @@ Within a domain, Dictum may use these standard subpackages as needed:
 
 - `controller`
 - `service`
+- `mapper`
 - `model.payload`
 - `model.vo`
 - `model.projection`
@@ -121,6 +122,7 @@ This keeps HTTP contracts stable even when persistence models evolve.
 
 MapStruct is the preferred mapping mechanism for backend DTO assembly.
 
+- Place MapStruct mappers in a domain-local `mapper` package such as `content.mapper` or `site.mapper`.
 - Use MapStruct to map projections to response DTOs.
 - Use MapStruct to map entities to response DTOs when a write flow needs a response payload.
 - Avoid ad hoc controller-level mapping.
@@ -134,6 +136,7 @@ Dictum does not standardize region comments in backend classes.
 - Prefer smaller collaborators and domain-local value objects over large grouped classes.
 - Prefer fixed method ordering over editor-specific region markers.
 - When logic becomes mixed, extract a dedicated collaborator instead of using section markers to hold the class together.
+- Prefer the leanest unambiguous helper method names inside a class. Avoid redundant suffixes like `Request`, `Response`, or `Dto` when the class context already makes them obvious.
 
 ## Consequences
 

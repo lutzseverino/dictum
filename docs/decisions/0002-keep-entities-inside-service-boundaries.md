@@ -37,7 +37,7 @@ Dictum will enforce these backend boundaries:
 - Read flows prefer projections or read models mapped to DTOs.
 - Query services use `getResponse(...)` for singular reads and `listResponses(...)` for collection reads.
 - Command services use lean, resource-scoped verbs for mutations such as `create(...)`, `update(...)`, and `publish(...)`.
-- MapStruct is the preferred mapping approach between projections/entities and DTOs.
+- MapStruct is the preferred mapping approach between projections/entities and DTOs, with mappers owned by a domain-local `mapper` package.
 - Region comments are not a backend structuring convention; extraction and method order should carry readability instead.
 
 ## Consequences

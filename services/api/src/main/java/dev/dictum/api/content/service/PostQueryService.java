@@ -1,6 +1,7 @@
 package dev.dictum.api.content.service;
 
 import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.content.mapper.PostApiMapper;
 import dev.dictum.api.content.model.vo.PostSlug;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.repository.InMemoryPostStore;
