@@ -52,6 +52,7 @@ Dictum uses:
 - [Tutorials](./tutorials/README.md)
 - [How-to Guides](./how-to/README.md)
 - [Run Java API Quality Checks](./how-to/run-java-api-quality-checks.md)
+- [Run SonarQube Analysis](./how-to/run-sonarqube-analysis.md)
 - [Reference](./reference/README.md)
 - [Explanation](./explanation/README.md)
 - [Product Scope and Boundaries](./explanation/product-scope-and-boundaries.md)

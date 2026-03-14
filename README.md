@@ -57,6 +57,8 @@ dictum/
 5. Check Java formatting and baseline requirements with `pnpm lint:api`.
 6. Apply Google Java Format to the API with `pnpm format:api`.
 7. Run API tests with `pnpm test:api`.
+8. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
+9. Run the full SonarQube validation flow with `pnpm sonar:validate`.
 
 ## Content Model
 
@@ -77,6 +79,12 @@ See [docs/reference/content-repository-contract.md](./docs/reference/content-rep
 - Admin web app for managing posts and site settings
 - Markdown-first content contract for externally owned blog frontends
 - Typed API client generated from the OpenAPI contract
+
+## Quality Tooling
+
+- SonarQube Community Build: `http://localhost:9000`
+- SonarQube scan configuration: `sonar-project.properties`
+- Local SonarQube workflow: [docs/how-to/run-sonarqube-analysis.md](./docs/how-to/run-sonarqube-analysis.md)
 
 ## Non-Goals
 
