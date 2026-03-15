@@ -4,12 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
 import dev.dictum.api.site.mapper.SiteSettingsApiMapperImpl;
 import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
+import dev.dictum.api.site.rule.SiteSettingsPatchRequiredValuesRule;
+import dev.dictum.api.site.rule.SiteSettingsPatchValidator;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
-import dev.dictum.api.web.patch.MergePatchBodyAccessor;
+import dev.dictum.api.web.patch.MergePatchDocument;
+import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +25,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SiteSettingsCommandServiceTest {
 
-  @Mock private MergePatchBodyAccessor mergePatchBodyAccessor;
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   private SiteSettingsCommandService siteSettingsCommandService;
 
@@ -29,14 +37,21 @@ class SiteSettingsCommandServiceTest {
         new SiteSettingsCommandService(
             new InMemorySiteSettingsStore(),
             new SiteSettingsApiMapperImpl(),
-            mergePatchBodyAccessor);
+            new SiteSettingsPatchValidator(List.of(new SiteSettingsPatchRequiredValuesRule())),
+            mergePatchDocumentAccessor);
   }
 
   @Test
   void updateChangesOnlyTheProvidedFields() {
-    when(mergePatchBodyAccessor.containsField("title")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("subtitle")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("motd")).thenReturn(true);
+    when(mergePatchDocumentAccessor.currentDocument())
+        .thenReturn(
+            patchDocument(
+                """
+                {
+                  "subtitle": "A modular markdown blog platform.",
+                  "motd": "API-first contract work is underway."
+                }
+                """));
 
     SiteSettingsResponse response =
         siteSettingsCommandService.update(
@@ -51,13 +66,20 @@ class SiteSettingsCommandServiceTest {
 
   @Test
   void updateRejectsExplicitNullForPresentFields() {
-    when(mergePatchBodyAccessor.containsField("title")).thenReturn(false);
-    when(mergePatchBodyAccessor.containsField("subtitle")).thenReturn(true);
-    when(mergePatchBodyAccessor.containsField("motd")).thenReturn(false);
+    when(mergePatchDocumentAccessor.currentDocument())
+        .thenReturn(patchDocument("{\"subtitle\":null}"));
 
     assertThatThrownBy(
             () -> siteSettingsCommandService.update(new UpdateSiteSettingsRequest().subtitle(null)))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field subtitle cannot be null");
+  }
+
+  private MergePatchDocument patchDocument(String json) {
+    try {
+      return new MergePatchDocument(OBJECT_MAPPER.readTree(json));
+    } catch (IOException exception) {
+      throw new IllegalStateException("Failed to create merge patch document for tests", exception);
+    }
   }
 }

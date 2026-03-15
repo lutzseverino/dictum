@@ -34,6 +34,7 @@ Within a domain, Dictum may use these standard subpackages as needed:
 
 - `controller`
 - `service`
+- `rule`
 - `mapper`
 - `model.payload`
 - `model.vo`
@@ -60,6 +61,7 @@ Services act as the gate for each endpoint.
 - Services own the endpoint flow, sequencing, and internal structure.
 - Services are responsible for validation order, repository interaction, and response assembly.
 - Public service methods should stay small and navigable, with private helpers used for internal steps when needed.
+- Domain-local mutation rules belong in a `rule` package when they outgrow simple inline checks and should not be left as service-local helper accretion.
 
 Dictum prefers explicit query and command responsibilities over a generic shared CRUD service abstraction.
 
