@@ -1,9 +1,12 @@
 export {
   Configuration,
   type CreatePostRequest,
+  FetchError,
   type PostResponse,
   type PostSummary,
   PostsApi,
+  type ProblemDetails,
+  ResponseError,
   SiteSettingsApi,
   type SiteSettingsResponse,
   type UpdatePostRequest,
