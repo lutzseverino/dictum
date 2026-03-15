@@ -6,17 +6,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import org.junit.jupiter.api.Test;
 
-class MergePatchFieldRulesTest {
+class PatchValueTest {
 
   @Test
   void requireNonNullWhenPresentAllowsAbsentFields() {
-    assertThatCode(() -> MergePatchFieldRules.requireNonNullWhenPresent("title", false, null))
+    assertThatCode(() -> PatchValue.absent().requireNonNullWhenPresent("title"))
         .doesNotThrowAnyException();
   }
 
   @Test
   void requireNonNullWhenPresentRejectsExplicitNullValues() {
-    assertThatThrownBy(() -> MergePatchFieldRules.requireNonNullWhenPresent("title", true, null))
+    assertThatThrownBy(() -> PatchValue.explicitNullValue().requireNonNullWhenPresent("title"))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field title cannot be null");
   }
