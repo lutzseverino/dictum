@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapperImpl;
-import dev.dictum.api.content.repository.InMemoryPostStore;
+import dev.dictum.api.content.repository.InMemoryPostRepository;
 import dev.dictum.api.content.rule.PostPatchRequiredValuesRule;
 import dev.dictum.api.content.rule.PostPatchValidator;
 import dev.dictum.api.generated.model.CreatePostRequest;
@@ -20,7 +20,6 @@ import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,15 +38,15 @@ class PostCommandServiceTest {
 
   @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
-  private InMemoryPostStore postStore;
+  private InMemoryPostRepository postRepository;
   private PostCommandService postCommandService;
 
   @BeforeEach
   void setUp() {
-    postStore = newPostStore();
+    postRepository = new InMemoryPostRepository();
     postCommandService =
         new PostCommandService(
-            postStore,
+            postRepository,
             new PostApiMapperImpl(),
             new PostPatchValidator(List.of(new PostPatchRequiredValuesRule())),
             mergePatchDocumentAccessor);
@@ -74,7 +73,7 @@ class PostCommandServiceTest {
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/index.md");
     assertThat(response.getStylesheetPath())
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/style.css");
-    assertThat(postStore.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
+    assertThat(postRepository.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
   }
 
   @Test
@@ -162,16 +161,6 @@ class PostCommandServiceTest {
       return new MergePatchDocument(OBJECT_MAPPER.readTree(json));
     } catch (IOException exception) {
       throw new IllegalStateException("Failed to create merge patch document for tests", exception);
-    }
-  }
-
-  private InMemoryPostStore newPostStore() {
-    try {
-      Constructor<InMemoryPostStore> constructor = InMemoryPostStore.class.getDeclaredConstructor();
-      constructor.setAccessible(true);
-      return constructor.newInstance();
-    } catch (Exception exception) {
-      throw new IllegalStateException("Failed to create in-memory post store for tests", exception);
     }
   }
 }

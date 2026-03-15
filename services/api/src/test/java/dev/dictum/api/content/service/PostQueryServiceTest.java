@@ -5,10 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapperImpl;
-import dev.dictum.api.content.repository.InMemoryPostStore;
+import dev.dictum.api.content.repository.InMemoryPostRepository;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
-import java.lang.reflect.Constructor;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ class PostQueryServiceTest {
 
   @BeforeEach
   void setUp() {
-    postQueryService = new PostQueryService(newPostStore(), new PostApiMapperImpl());
+    postQueryService = new PostQueryService(new InMemoryPostRepository(), new PostApiMapperImpl());
   }
 
   @Test
@@ -49,15 +48,5 @@ class PostQueryServiceTest {
     assertThatThrownBy(() -> postQueryService.getResponse("unknown-slug"))
         .isInstanceOf(PostNotFoundException.class)
         .hasMessage("No post exists for slug unknown-slug");
-  }
-
-  private InMemoryPostStore newPostStore() {
-    try {
-      Constructor<InMemoryPostStore> constructor = InMemoryPostStore.class.getDeclaredConstructor();
-      constructor.setAccessible(true);
-      return constructor.newInstance();
-    } catch (Exception exception) {
-      throw new IllegalStateException("Failed to create in-memory post store for tests", exception);
-    }
   }
 }
