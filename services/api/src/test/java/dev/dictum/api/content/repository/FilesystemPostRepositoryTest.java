@@ -1,6 +1,7 @@
 package dev.dictum.api.content.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
@@ -69,5 +70,56 @@ class FilesystemPostRepositoryTest {
         .isEqualTo("body { color: tomato; }");
     assertThat(Files.readString(contentRoot.resolve("posts/notes-on-remote-editing/meta.json")))
         .isEqualTo("{}");
+  }
+
+  @Test
+  void savePreservesExistingMetaJsonContent() throws Exception {
+    Path metaPath = contentRoot.resolve("posts/dictum-begins/meta.json");
+    Files.writeString(metaPath, "{\"motif\":\"accent-border\"}");
+
+    PostState existing = postRepository.findBySlug("dictum-begins").orElseThrow();
+    PostState updated =
+        new PostState(
+            existing.slug(),
+            "Dictum Begins, Revised",
+            existing.excerpt(),
+            existing.status(),
+            existing.template(),
+            existing.publishedAt(),
+            existing.tags(),
+            existing.hasStylesheet(),
+            existing.body(),
+            existing.stylesheetContent(),
+            existing.contentPath(),
+            existing.stylesheetPath(),
+            existing.metaPath());
+
+    postRepository.save(updated);
+
+    assertThat(Files.readString(metaPath)).isEqualTo("{\"motif\":\"accent-border\"}");
+  }
+
+  @Test
+  void findBySlugRejectsFrontmatterSlugMismatches() throws Exception {
+    Files.writeString(
+        contentRoot.resolve("posts/dictum-begins/index.md"),
+        """
+        ---
+        title: Dictum Begins
+        slug: wrong-slug
+        excerpt: A first seeded document proving the site reads through a content service.
+        publishedAt: 2026-03-12
+        tags:
+          - architecture
+          - foundation
+        template: essay
+        status: published
+        ---
+        Dictum starts life as a hybrid stack.
+        """);
+
+    assertThatThrownBy(() -> postRepository.findBySlug("dictum-begins"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Post frontmatter slug wrong-slug does not match directory slug dictum-begins");
   }
 }
