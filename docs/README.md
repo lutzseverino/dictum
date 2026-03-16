@@ -3,17 +3,13 @@ title: Documentation
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-13
+updated: 2026-03-16
 owner: Engineering
 doc-type: index
-summary: Define the documentation structure for Dictum using Diataxis, MADR, and OpenAPI.
+summary: Define the documentation standards for Dictum using Diataxis, MADR, and OpenAPI.
 ---
 
 # Documentation
-
-## Purpose
-
-Organize Dictum documentation around established open standards so architecture, contributor guidance, API contracts, and decision history stay durable and easy to navigate.
 
 Dictum uses:
 
@@ -38,7 +34,19 @@ Dictum uses:
 - `docs/_templates/`
   Starting points for new documentation files
 
-## Current Documents
+## Writing Rules
+
+- Use YAML frontmatter in every tracked document.
+- Keep metadata explicit: title, status, author, created, updated, owner, doc-type, and summary.
+- Treat structure and writing style as separate concerns.
+- Product-facing docs and reference docs should be direct and declarative.
+- Explanation docs may include rationale, tradeoffs, and conceptual framing.
+- Decision docs should use MADR structure.
+- How-to guides should stay task-first.
+- Keep machine-readable HTTP contracts under `docs/openapi/`.
+- Avoid meta-commentary outside explanation, decision, and template documents.
+
+## Documents
 
 - [Documentation Templates](./_templates/README.md)
 - [Tutorials](./tutorials/README.md)
@@ -46,13 +54,7 @@ Dictum uses:
 - [Run Java API Quality Checks](./how-to/run-java-api-quality-checks.md)
 - [Reference](./reference/README.md)
 - [Explanation](./explanation/README.md)
+- [Product Scope and Boundaries](./explanation/product-scope-and-boundaries.md)
 - [Decision Records](./decisions/README.md)
+- [0004: Define control-plane product scope](./decisions/0004-define-control-plane-product-scope.md)
 - [OpenAPI](./openapi/README.md)
-
-## Authoring Rules
-
-- Use YAML frontmatter in every tracked document.
-- Keep metadata explicit: title, status, author, created, updated, owner, doc-type, and summary.
-- Put content in the Diataxis area that matches the reader's need instead of the author's preference.
-- Use `docs/decisions/` only for durable decisions with meaningful tradeoffs.
-- Keep machine-readable HTTP contracts under `docs/openapi/`, even when they are also exposed by the running service.

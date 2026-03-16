@@ -1,6 +1,6 @@
 <div align="center">
     <h1 align="center">Dictum</h1>
-    <p>A hybrid blog platform monorepo with a Spring Boot control plane, a Next.js public site, and a separate phone-first admin app.</p>
+    <p>An open-source control plane for developer-owned personal blogs.</p>
     <p>
         <img alt="status" src="https://img.shields.io/badge/status-foundation-0f172a">
         <img alt="frontend" src="https://img.shields.io/badge/frontend-next.js-111827">
@@ -10,30 +10,32 @@
 
 ## Overview
 
-Dictum is a modular blog platform intended to support a markdown-first public site, a phone-friendly admin experience, and a backend control plane that can later orchestrate content mutations, settings changes, and provider-assisted workflows.
+Dictum is an open-source control plane for developer-owned personal blogs.
 
-The repository currently establishes the platform architecture and development foundations rather than a full end-user product.
+It provides:
 
-Project documentation follows Diataxis for structure, MADR for decision records, and OpenAPI for HTTP contracts. Start in [docs/README.md](./docs/README.md).
+- a control-plane API for posts and site settings
+- a browser-based admin app for managing a blog
+- shared contracts for markdown-first content workflows
+
+The public blog frontend lives outside this repository and consumes Dictum through its API and content contracts.
 
 ## Architecture
 
-- `apps/site` hosts the public blog shell.
-- `apps/admin` hosts the mobile-first admin shell.
-- `services/api` owns API contracts, orchestration boundaries, and future auth/provider integrations.
-- `packages/rendering` defines the markdown/content contracts.
-- `packages/site-kit` holds reusable React primitives for the public site.
+- `services/api` owns the control-plane API and orchestration boundaries.
+- `apps/admin` hosts the mobile-first admin app.
+- `packages/api-client` exposes the generated TypeScript client for the control plane.
+- `packages/rendering` defines the content models and repository contracts shared by Dictum and external blog consumers.
 
 ## Repository Layout
 
 ```text
 dictum/
   apps/
-    site/
     admin/
   packages/
+    api-client/
     rendering/
-    site-kit/
   services/
     api/
   docs/
@@ -49,17 +51,16 @@ dictum/
 ## Development
 
 1. Install frontend dependencies from the repo root with `pnpm install`.
-2. Run the public site with `pnpm dev:site`.
-3. Run the admin app with `pnpm dev:admin`.
-4. Run the API with `pnpm dev:api`.
-5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
-6. Check Java formatting and baseline requirements with `pnpm lint:api`.
-7. Apply Google Java Format to the API with `pnpm format:api`.
-8. Run API tests with `pnpm test:api`.
+2. Run the admin app with `pnpm dev:admin`.
+3. Run the API with `pnpm dev:api`.
+4. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
+5. Check Java formatting and baseline requirements with `pnpm lint:api`.
+6. Apply Google Java Format to the API with `pnpm format:api`.
+7. Run API tests with `pnpm test:api`.
 
 ## Content Model
 
-- The future content source of truth lives in a separate `dictum-content` repository.
+- The content source of truth lives in a separate `dictum-content` repository.
 - Posts remain markdown-first.
 - Per-post styling is represented as optional plain CSS sidecars, not embedded Tailwind utilities in markdown.
 
@@ -70,9 +71,16 @@ See [docs/reference/content-repository-contract.md](./docs/reference/content-rep
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-## Current Scope
+## Product
 
-- Establish the monorepo structure and module boundaries.
-- Provide placeholder public and admin apps.
-- Expose stub control-plane endpoints and OpenAPI docs.
-- Keep auth, live content writes, and provider integrations as explicit future boundaries.
+- Control-plane API for publishing and blog management
+- Admin web app for managing posts and site settings
+- Markdown-first content contract for externally owned blog frontends
+- Typed API client generated from the OpenAPI contract
+
+## Non-Goals
+
+- Owning the public blog frontend
+- Shipping a canonical blog theme or design system
+- Expanding into newsletters, memberships, or broader publication-platform concerns
+- Becoming a generic CMS for arbitrary content domains

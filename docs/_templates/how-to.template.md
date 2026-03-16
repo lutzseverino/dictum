@@ -11,9 +11,7 @@ summary:
 
 # Title
 
-## When To Use This Guide
-
-Explain the task or situation this guide addresses.
+Short description of the task this guide covers.
 
 ## Steps
 
@@ -24,4 +22,3 @@ Explain the task or situation this guide addresses.
 ## Verification
 
 Describe how to confirm the task worked.
-
