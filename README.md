@@ -24,8 +24,6 @@ Project documentation follows Diataxis for structure, MADR for decision records,
 - `apps/admin` hosts the mobile-first admin shell that belongs to Dictum's core product surface.
 - `packages/api-client` exposes the generated TypeScript client for the control plane.
 - `packages/rendering` defines the markdown/content contracts shared by Dictum and external blog consumers.
-- `apps/site` is a temporary public-site consumer shell kept in the workspace while public-site concerns are moved out of the core product definition.
-- `packages/site-kit` is experimental public-site UI scaffolding and is not part of Dictum's intended long-term core surface.
 
 ## Repository Layout
 
@@ -33,11 +31,9 @@ Project documentation follows Diataxis for structure, MADR for decision records,
 dictum/
   apps/
     admin/
-    site/
   packages/
     api-client/
     rendering/
-    site-kit/
   services/
     api/
   docs/
@@ -55,11 +51,10 @@ dictum/
 1. Install frontend dependencies from the repo root with `pnpm install`.
 2. Run the admin app with `pnpm dev:admin`.
 3. Run the API with `pnpm dev:api`.
-4. The temporary public-site shell can be started with `pnpm dev:site`, but it is not part of Dictum's intended core product surface.
-5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
-6. Check Java formatting and baseline requirements with `pnpm lint:api`.
-7. Apply Google Java Format to the API with `pnpm format:api`.
-8. Run API tests with `pnpm test:api`.
+4. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
+5. Check Java formatting and baseline requirements with `pnpm lint:api`.
+6. Apply Google Java Format to the API with `pnpm format:api`.
+7. Run API tests with `pnpm test:api`.
 
 ## Content Model
 
