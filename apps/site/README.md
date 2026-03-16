@@ -1,9 +1,10 @@
 This app module is intentionally blank for now.
 
-It remains in the repository as the future public site shell, but no public UI work is active in the current backend-first phase.
+It remains in the repository only as a temporary public-site consumer shell while Dictum's product scope is narrowed around the control plane.
 
 ## Current Scope
 
 - Keep the Next.js module available in the workspace.
-- Avoid product-facing rendering assumptions until the backend and content workflows are further along.
-- Rebuild the public experience from this clean slate when the project is ready for frontend work.
+- Avoid treating this app as part of Dictum's required product surface.
+- Use it only for optional consumer experiments while public blog implementations are expected to live outside the core product repository.
+- Expect this area to move into an example or separate consumer repository over time.
