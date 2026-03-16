@@ -6,8 +6,8 @@ info:
   description: >
     This contract defines the first reviewable HTTP surface for Dictum using
     conventional REST resource design. It covers post management and site
-    settings without introducing provider workflows, runtime auth
-    implementation, or persistence-specific details.
+    settings without introducing public-site ownership, provider workflows,
+    runtime auth implementation, or persistence-specific details.
 servers:
   - url: http://localhost:8080
     description: Local development server
@@ -137,9 +137,9 @@ paths:
                       - foundation
                     hasStylesheet: true
                     body: |
-                      Dictum starts life as a hybrid stack with a deliberate split between content, control plane, and presentation.
+                      Dictum starts life as a control plane with a deliberate split between content management and public presentation.
 
-                      The public site already reads through a service abstraction.
+                      Blog frontends are expected to remain external consumers.
                     contentPath: posts/dictum-begins/index.md
                     stylesheetPath: posts/dictum-begins/style.css
                     metaPath: posts/dictum-begins/meta.json
@@ -253,8 +253,8 @@ paths:
             examples:
               default:
                 value:
-                  subtitle: A modular markdown blog platform.
-                  motd: "API-first contract work is underway."
+                  subtitle: A modular control plane for developer-owned personal blogs.
+                  motd: "Control-plane contract work is underway."
 
       responses:
         "200":

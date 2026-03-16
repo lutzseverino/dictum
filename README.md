@@ -1,6 +1,6 @@
 <div align="center">
     <h1 align="center">Dictum</h1>
-    <p>A hybrid blog platform monorepo with a Spring Boot control plane, a Next.js public site, and a separate phone-first admin app.</p>
+    <p>An open-source control plane for developer-owned personal blogs.</p>
     <p>
         <img alt="status" src="https://img.shields.io/badge/status-foundation-0f172a">
         <img alt="frontend" src="https://img.shields.io/badge/frontend-next.js-111827">
@@ -10,28 +10,32 @@
 
 ## Overview
 
-Dictum is a modular blog platform intended to support a markdown-first public site, a phone-friendly admin experience, and a backend control plane that can later orchestrate content mutations, settings changes, and provider-assisted workflows.
+Dictum is an open-source control plane for developer-owned personal blogs. Its product surface is the publishing API, the admin experience, and the content contracts needed to manage a blog cleanly without owning the public presentation layer.
 
-The repository currently establishes the platform architecture and development foundations rather than a full end-user product.
+Your public blog frontend is expected to live in a separate repository and consume Dictum through its HTTP API and shared contracts. Dictum may later offer managed hosting for the control plane and connected blog frontends, but the core open-source product remains the control plane itself.
+
+The repository currently establishes the product architecture and development foundations rather than a full end-user product.
 
 Project documentation follows Diataxis for structure, MADR for decision records, and OpenAPI for HTTP contracts. Start in [docs/README.md](./docs/README.md).
 
 ## Architecture
 
-- `apps/site` hosts the public blog shell.
-- `apps/admin` hosts the mobile-first admin shell.
-- `services/api` owns API contracts, orchestration boundaries, and future auth/provider integrations.
-- `packages/rendering` defines the markdown/content contracts.
-- `packages/site-kit` holds reusable React primitives for the public site.
+- `services/api` owns the control-plane API, orchestration boundaries, and future auth/provider integrations.
+- `apps/admin` hosts the mobile-first admin shell that belongs to Dictum's core product surface.
+- `packages/api-client` exposes the generated TypeScript client for the control plane.
+- `packages/rendering` defines the markdown/content contracts shared by Dictum and external blog consumers.
+- `apps/site` is a temporary public-site consumer shell kept in the workspace while public-site concerns are moved out of the core product definition.
+- `packages/site-kit` is experimental public-site UI scaffolding and is not part of Dictum's intended long-term core surface.
 
 ## Repository Layout
 
 ```text
 dictum/
   apps/
-    site/
     admin/
+    site/
   packages/
+    api-client/
     rendering/
     site-kit/
   services/
@@ -49,9 +53,9 @@ dictum/
 ## Development
 
 1. Install frontend dependencies from the repo root with `pnpm install`.
-2. Run the public site with `pnpm dev:site`.
-3. Run the admin app with `pnpm dev:admin`.
-4. Run the API with `pnpm dev:api`.
+2. Run the admin app with `pnpm dev:admin`.
+3. Run the API with `pnpm dev:api`.
+4. The temporary public-site shell can be started with `pnpm dev:site`, but it is not part of Dictum's intended core product surface.
 5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
 6. Check Java formatting and baseline requirements with `pnpm lint:api`.
 7. Apply Google Java Format to the API with `pnpm format:api`.
@@ -72,7 +76,15 @@ See [docs/reference/content-repository-contract.md](./docs/reference/content-rep
 
 ## Current Scope
 
-- Establish the monorepo structure and module boundaries.
-- Provide placeholder public and admin apps.
-- Expose stub control-plane endpoints and OpenAPI docs.
-- Keep auth, live content writes, and provider integrations as explicit future boundaries.
+- Establish the control-plane module boundaries and contracts.
+- Expose post and site-settings control-plane endpoints plus OpenAPI docs.
+- Keep the admin app in the workspace as a core product surface for future UI work.
+- Preserve a markdown-first content contract for externally owned blog frontends.
+- Keep managed hosting, auth hardening, and deployment integrations as explicit future boundaries.
+
+## Out of Scope
+
+- Treating a public blog frontend as part of Dictum's required product surface
+- Shipping a canonical blog theme or design system as a product commitment
+- Expanding into newsletters, memberships, or broader publication-platform concerns
+- Becoming a generic CMS for arbitrary content domains

@@ -3,7 +3,7 @@ title: OpenAPI
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-13
+updated: 2026-03-16
 owner: Engineering
 doc-type: index
 summary: Define the location and purpose of machine-readable HTTP API contracts for Dictum.
@@ -31,5 +31,6 @@ The first contract slice defines conventional REST endpoints for:
 - posts
 - site settings
 
-This slice intentionally does not standardize provider job resources or runtime auth implementation yet.
+This slice intentionally defines control-plane resources only. It does not standardize public rendering, theme delivery, or blog-frontend ownership.
 
+It also intentionally does not standardize provider job resources or runtime auth implementation yet.
