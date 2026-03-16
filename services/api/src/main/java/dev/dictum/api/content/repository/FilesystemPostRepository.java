@@ -109,11 +109,13 @@ public class FilesystemPostRepository implements PostRepository {
 
     try {
       MarkdownPostDocument document = parseMarkdown(Files.readString(contentPath));
+      String directorySlug = postDirectory.getFileName().toString();
+      validateDirectorySlug(directorySlug, document.frontmatter().slug());
       String stylesheetContent =
           Files.exists(stylesheetPath) ? Files.readString(stylesheetPath) : null;
 
       return new PostState(
-          document.frontmatter().slug(),
+          directorySlug,
           document.frontmatter().title(),
           document.frontmatter().excerpt(),
           document.frontmatter().status(),
@@ -189,6 +191,10 @@ public class FilesystemPostRepository implements PostRepository {
       return;
     }
 
+    if (Files.exists(metaPath)) {
+      return;
+    }
+
     Files.writeString(
         metaPath, jsonMapper.writeValueAsString(java.util.Map.of()), StandardCharsets.UTF_8);
   }
@@ -204,6 +210,16 @@ public class FilesystemPostRepository implements PostRepository {
     }
 
     return Path.of(configuredRoot);
+  }
+
+  private void validateDirectorySlug(String directorySlug, String frontmatterSlug) {
+    if (!directorySlug.equals(frontmatterSlug)) {
+      throw new IllegalStateException(
+          "Post frontmatter slug "
+              + frontmatterSlug
+              + " does not match directory slug "
+              + directorySlug);
+    }
   }
 
   private record MarkdownPostDocument(MarkdownPostFrontmatter frontmatter, String body) {}
