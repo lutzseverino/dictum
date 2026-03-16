@@ -11,13 +11,7 @@ summary: Define the expected structure of the external dictum-content repository
 
 # Content Repository Contract
 
-## Purpose
-
-Define the file and folder contract for the external `dictum-content` repository that acts as the source of truth for site settings and markdown posts.
-
-## Specification
-
-The `dictum` application repository does not own content files directly. It expects a separate repository with this shape:
+Content lives in a separate `dictum-content` repository with this shape:
 
 ```text
 posts/
@@ -43,7 +37,7 @@ Each `posts/<slug>/index.md` file starts with YAML frontmatter using these field
 ```yaml
 title: Dictum Begins
 slug: dictum-begins
-excerpt: A first seeded document proving the site reads through a content service.
+excerpt: A first post for a Dictum-managed blog.
 publishedAt: 2026-03-12 # optional for drafts
 tags:
   - architecture
@@ -53,8 +47,3 @@ status: published
 ```
 
 The markdown body begins after the closing `---` frontmatter boundary.
-
-## Notes
-
-- The filesystem-backed repository adapter in `services/api` reads and writes this contract directly.
-- Git-backed repository workflows remain out of scope for the current slice.

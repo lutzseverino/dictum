@@ -11,16 +11,8 @@ summary:
 
 # Title
 
-## Purpose
-
-Explain what this documentation area covers.
+Short description of what this section contains.
 
 ## Documents
 
 - [Document](./relative-path.md)
-
-## Scope Boundaries
-
-- State what belongs in this area.
-- State what should live elsewhere when helpful.
-

@@ -3,17 +3,15 @@ title: Documentation Templates
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-12
+updated: 2026-03-16
 owner: Engineering
 doc-type: index
-summary: Explain how Dictum documentation templates map to Diataxis and MADR.
+summary: Provide starting points for Dictum documentation while preserving doc-type-specific writing rules.
 ---
 
 # Documentation Templates
 
-## Purpose
-
-Provide consistent starting points for new documentation without forcing contributors to invent structure from scratch.
+Use these templates to preserve Dictum's documentation structure without forcing every doc into the same tone.
 
 ## Available Templates
 
@@ -30,10 +28,18 @@ Provide consistent starting points for new documentation without forcing contrib
 - [decision.template.md](./decision.template.md)
   Use for MADR-style decision records
 
+## Writing Rules By Doc Type
+
+- `index`: short directory or section map, minimal prose
+- `reference`: factual, contract-first, no rationale unless absolutely required for interpretation
+- `how-to`: task-first instructions and verification
+- `tutorial`: guided learning sequence for a full outcome
+- `explanation`: conceptual rationale and tradeoffs
+- `decision`: MADR decision record with context, decision, consequences, and alternatives
+
 ## Usage Rules
 
 1. Copy the template into the target folder.
 2. Replace all placeholder values before committing.
 3. Remove instructional notes that do not belong in the final document.
 4. Link the new document from the relevant section index.
-
