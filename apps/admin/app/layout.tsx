@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Dictum Admin",
-  description: "Empty admin shell reserved for future work.",
+  description: "Admin interface for the Dictum blog control plane.",
 };
 
 export default function RootLayout({

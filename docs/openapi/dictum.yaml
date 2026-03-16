@@ -40,7 +40,7 @@ paths:
                   value:
                     - slug: dictum-begins
                       title: Dictum Begins
-                      excerpt: A first seeded document proving the site reads through a content service.
+                      excerpt: A first post for a Dictum-managed blog.
                       status: published
                       template: essay
                       publishedAt: "2026-03-12"
@@ -50,7 +50,7 @@ paths:
                       hasStylesheet: true
                     - slug: remote-controls-later
                       title: Remote Controls, Later
-                      excerpt: The admin experience will later own publish and settings mutations.
+                      excerpt: The admin experience manages publish and settings mutations.
                       status: draft
                       template: dispatch
                       publishedAt: null
@@ -128,7 +128,7 @@ paths:
                   value:
                     slug: dictum-begins
                     title: Dictum Begins
-                    excerpt: A first seeded document proving the site reads through a content service.
+                    excerpt: A first post for a Dictum-managed blog.
                     status: published
                     template: essay
                     publishedAt: "2026-03-12"
@@ -139,7 +139,7 @@ paths:
                     body: |
                       Dictum starts life as a control plane with a deliberate split between content management and public presentation.
 
-                      Blog frontends are expected to remain external consumers.
+                      Blog frontends remain external consumers.
                     contentPath: posts/dictum-begins/index.md
                     stylesheetPath: posts/dictum-begins/style.css
                     metaPath: posts/dictum-begins/meta.json

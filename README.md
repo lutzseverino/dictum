@@ -10,20 +10,22 @@
 
 ## Overview
 
-Dictum is an open-source control plane for developer-owned personal blogs. Its product surface is the publishing API, the admin experience, and the content contracts needed to manage a blog cleanly without owning the public presentation layer.
+Dictum is an open-source control plane for developer-owned personal blogs.
 
-Your public blog frontend is expected to live in a separate repository and consume Dictum through its HTTP API and shared contracts. Dictum may later offer managed hosting for the control plane and connected blog frontends, but the core open-source product remains the control plane itself.
+It provides:
 
-The repository currently establishes the product architecture and development foundations rather than a full end-user product.
+- a control-plane API for posts and site settings
+- a browser-based admin app for managing a blog
+- shared contracts for markdown-first content workflows
 
-Project documentation follows Diataxis for structure, MADR for decision records, and OpenAPI for HTTP contracts. Start in [docs/README.md](./docs/README.md).
+The public blog frontend lives outside this repository and consumes Dictum through its API and content contracts.
 
 ## Architecture
 
-- `services/api` owns the control-plane API, orchestration boundaries, and future auth/provider integrations.
-- `apps/admin` hosts the mobile-first admin shell that belongs to Dictum's core product surface.
+- `services/api` owns the control-plane API and orchestration boundaries.
+- `apps/admin` hosts the mobile-first admin app.
 - `packages/api-client` exposes the generated TypeScript client for the control plane.
-- `packages/rendering` defines the markdown/content contracts shared by Dictum and external blog consumers.
+- `packages/rendering` defines the content models and repository contracts shared by Dictum and external blog consumers.
 
 ## Repository Layout
 
@@ -58,7 +60,7 @@ dictum/
 
 ## Content Model
 
-- The future content source of truth lives in a separate `dictum-content` repository.
+- The content source of truth lives in a separate `dictum-content` repository.
 - Posts remain markdown-first.
 - Per-post styling is represented as optional plain CSS sidecars, not embedded Tailwind utilities in markdown.
 
@@ -69,17 +71,16 @@ See [docs/reference/content-repository-contract.md](./docs/reference/content-rep
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-## Current Scope
+## Product
 
-- Establish the control-plane module boundaries and contracts.
-- Expose post and site-settings control-plane endpoints plus OpenAPI docs.
-- Keep the admin app in the workspace as a core product surface for future UI work.
-- Preserve a markdown-first content contract for externally owned blog frontends.
-- Keep managed hosting, auth hardening, and deployment integrations as explicit future boundaries.
+- Control-plane API for publishing and blog management
+- Admin web app for managing posts and site settings
+- Markdown-first content contract for externally owned blog frontends
+- Typed API client generated from the OpenAPI contract
 
-## Out of Scope
+## Non-Goals
 
-- Treating a public blog frontend as part of Dictum's required product surface
-- Shipping a canonical blog theme or design system as a product commitment
+- Owning the public blog frontend
+- Shipping a canonical blog theme or design system
 - Expanding into newsletters, memberships, or broader publication-platform concerns
 - Becoming a generic CMS for arbitrary content domains
