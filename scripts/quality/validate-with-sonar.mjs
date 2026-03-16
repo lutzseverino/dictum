@@ -1,9 +1,16 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { createInterface } from "node:readline/promises";
-import { spawnSync } from "node:child_process";
 import process from "node:process";
+import {
+  commandExists,
+  info,
+  isInteractiveTerminal,
+  prompt,
+  promptYesNo,
+  runCheckedCommand,
+  sleep,
+} from "../lib/cli.mjs";
 
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const requiredSonarEnv = ["SONAR_HOST_URL", "SONAR_TOKEN"];
@@ -117,7 +124,7 @@ async function ensureLocalServerReady(sonarConfig) {
     return false;
   }
 
-  console.log("Local SonarQube is not running. Attempting to start it with Docker...");
+  info("Local SonarQube is not running. Attempting to start it with Docker...");
   runCommand("docker", ["compose", "up", "-d"]);
 
   if (await waitForServerReady()) {
@@ -129,27 +136,11 @@ async function ensureLocalServerReady(sonarConfig) {
 }
 
 function runPnpm(args, env = process.env) {
-  const result = spawnSync(pnpmCommand, args, {
-    cwd: process.cwd(),
-    env,
-    stdio: "inherit",
-  });
-
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
-  }
+  runCheckedCommand(pnpmCommand, args, { env });
 }
 
 function runCommand(command, args) {
-  const result = spawnSync(command, args, {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: "inherit",
-  });
-
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
-  }
+  runCheckedCommand(command, args);
 }
 
 function readEnvConfig() {
@@ -208,44 +199,10 @@ function resolveLocalConfigFile() {
   return join(baseDir, "dictum", "sonarqube.json");
 }
 
-function isInteractiveTerminal() {
-  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
-}
-
-function commandExists(command, args) {
-  const result = spawnSync(command, args, {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: "ignore",
-  });
-
-  return result.status === 0;
-}
-
-async function promptYesNo(message) {
-  const response = await prompt(message);
-  const normalized = response.trim().toLowerCase();
-
-  return normalized === "" || normalized === "y" || normalized === "yes";
-}
-
 async function promptForToken() {
   return prompt(
     "Paste a SonarQube token for http://localhost:9000, or press Enter to skip for now: ",
   ).then((value) => value.trim());
-}
-
-async function prompt(message) {
-  const readline = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  try {
-    return await readline.question(message);
-  } finally {
-    readline.close();
-  }
 }
 
 async function waitForServerReady() {
@@ -275,10 +232,6 @@ async function isServerReady() {
   } catch {
     return false;
   }
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function warnSkippedSonar(reason) {
