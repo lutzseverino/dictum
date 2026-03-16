@@ -1,10 +1,11 @@
-This app module is intentionally blank for now.
+# Admin App
 
-It remains in the repository as the future admin application shell and belongs to Dictum's intended core product surface.
+This app hosts Dictum's web admin interface.
 
-## Current Scope
+It is the browser-based management surface for posts, site settings, and other control-plane operations.
 
-- Keep the Next.js module available in the workspace.
-- Treat this app as the future mobile-first management UI for Dictum's control plane.
-- Avoid broad product-facing UI assumptions until the backend and content workflows are further along.
-- Rebuild UI flows from this clean slate when the project is ready for admin work.
+## Role
+
+- Mobile-first admin UI
+- Consumer of the Dictum control-plane API
+- Core product surface of the repository
