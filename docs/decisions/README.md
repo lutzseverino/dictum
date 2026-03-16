@@ -11,9 +11,7 @@ summary: Index MADR-style decision records for Dictum.
 
 # Decision Records
 
-## Purpose
-
-Preserve durable decisions, tradeoffs, and rejected alternatives so future contributors can understand why Dictum chose a particular path.
+MADR-style decision records for durable engineering and architecture choices.
 
 ## Documents
 
