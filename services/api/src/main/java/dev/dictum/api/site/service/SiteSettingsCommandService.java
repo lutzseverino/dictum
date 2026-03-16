@@ -5,7 +5,7 @@ import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
 import dev.dictum.api.site.mapper.SiteSettingsApiMapper;
 import dev.dictum.api.site.model.vo.SiteSettingsPatch;
 import dev.dictum.api.site.model.vo.SiteSettingsState;
-import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
+import dev.dictum.api.site.repository.SiteSettingsRepository;
 import dev.dictum.api.site.rule.SiteSettingsPatchValidator;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
@@ -14,24 +14,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class SiteSettingsCommandService {
 
-  private final InMemorySiteSettingsStore siteSettingsStore;
+  private final SiteSettingsRepository siteSettingsRepository;
   private final SiteSettingsApiMapper siteSettingsApiMapper;
   private final SiteSettingsPatchValidator siteSettingsPatchValidator;
   private final MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   SiteSettingsCommandService(
-      InMemorySiteSettingsStore siteSettingsStore,
+      SiteSettingsRepository siteSettingsRepository,
       SiteSettingsApiMapper siteSettingsApiMapper,
       SiteSettingsPatchValidator siteSettingsPatchValidator,
       MergePatchDocumentAccessor mergePatchDocumentAccessor) {
-    this.siteSettingsStore = siteSettingsStore;
+    this.siteSettingsRepository = siteSettingsRepository;
     this.siteSettingsApiMapper = siteSettingsApiMapper;
     this.siteSettingsPatchValidator = siteSettingsPatchValidator;
     this.mergePatchDocumentAccessor = mergePatchDocumentAccessor;
   }
 
   public SiteSettingsResponse update(UpdateSiteSettingsRequest request) {
-    SiteSettingsState current = siteSettingsStore.get();
+    SiteSettingsState current = siteSettingsRepository.get();
     SiteSettingsPatch patch = readPatch(request);
     siteSettingsPatchValidator.validate(patch);
 
@@ -41,7 +41,7 @@ public class SiteSettingsCommandService {
             patch.subtitle().isPresent() ? patch.subtitle().value() : current.subtitle(),
             patch.motd().isPresent() ? patch.motd().value() : current.motd());
 
-    return siteSettingsApiMapper.toResponse(siteSettingsStore.save(updated));
+    return siteSettingsApiMapper.toResponse(siteSettingsRepository.save(updated));
   }
 
   private SiteSettingsPatch readPatch(UpdateSiteSettingsRequest request) {

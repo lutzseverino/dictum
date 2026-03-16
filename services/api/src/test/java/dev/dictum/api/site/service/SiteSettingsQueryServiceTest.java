@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.site.mapper.SiteSettingsApiMapperImpl;
-import dev.dictum.api.site.repository.InMemorySiteSettingsStore;
+import dev.dictum.api.site.repository.InMemorySiteSettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +16,7 @@ class SiteSettingsQueryServiceTest {
   void setUp() {
     siteSettingsQueryService =
         new SiteSettingsQueryService(
-            new InMemorySiteSettingsStore(), new SiteSettingsApiMapperImpl());
+            new InMemorySiteSettingsRepository(), new SiteSettingsApiMapperImpl());
   }
 
   @Test

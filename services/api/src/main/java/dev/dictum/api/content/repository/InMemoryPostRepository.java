@@ -9,14 +9,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-@Component
-public class InMemoryPostStore {
+@Repository
+@ConditionalOnProperty(
+    name = "dictum.content.repository",
+    havingValue = "in-memory",
+    matchIfMissing = true)
+public class InMemoryPostRepository implements PostRepository {
 
   private final Map<String, PostState> posts = new LinkedHashMap<>();
 
-  InMemoryPostStore() {
+  public InMemoryPostRepository() {
     PostState firstPost =
         new PostState(
             "dictum-begins",
@@ -31,6 +36,12 @@ public class InMemoryPostStore {
             Dictum starts life as a hybrid stack with a deliberate split between content, control plane, and presentation.
 
             The public site already reads through a service abstraction.
+            """,
+            """
+            article {
+              border-inline-start: 0.4rem solid #dd6b20;
+              padding-inline-start: 1.25rem;
+            }
             """,
             "posts/dictum-begins/index.md",
             "posts/dictum-begins/style.css",
@@ -51,6 +62,7 @@ public class InMemoryPostStore {
 
             The next slices will connect this draft to the generated control-plane client.
             """,
+            null,
             "posts/remote-controls-later/index.md",
             null,
             null);
@@ -59,18 +71,22 @@ public class InMemoryPostStore {
     posts.put(secondPost.slug(), secondPost);
   }
 
+  @Override
   public synchronized List<PostState> findAll() {
     return new ArrayList<>(posts.values());
   }
 
+  @Override
   public synchronized Optional<PostState> findBySlug(String slug) {
     return Optional.ofNullable(posts.get(slug));
   }
 
+  @Override
   public synchronized boolean exists(String slug) {
     return posts.containsKey(slug);
   }
 
+  @Override
   public synchronized PostState save(PostState state) {
     posts.put(state.slug(), state);
     return state;
