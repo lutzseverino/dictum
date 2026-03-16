@@ -52,14 +52,17 @@ Dictum may later monetize by offering managed hosting for:
 
 This hosting story does not change the product boundary. Managed hosting is an operational offering built around the control plane, not a reason for Dictum to absorb public-site ownership into the core repository.
 
-### Transitional Areas In This Repository
+### Public-Site Work
 
-Some existing workspace areas do not match the intended long-term product surface directly:
+Public-site experiments, starters, and blog-specific UI packages should live outside Dictum's required product surface.
 
-- `apps/site` is a temporary public-site consumer shell kept in the workspace while scope is narrowed
-- `packages/site-kit` is experimental public-site UI scaffolding rather than a core product package
+They may live in:
 
-These areas may remain temporarily for experimentation, but they should not drive the product definition or roadmap priorities.
+- separate blog repositories
+- example repositories
+- future example directories that are explicitly non-core
+
+They should not shape the control-plane roadmap or weaken the separation between Dictum and each blog's public implementation.
 
 ## Consequences
 
