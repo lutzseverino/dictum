@@ -17,9 +17,6 @@ importers:
 
   apps/admin:
     dependencies:
-      '@dictum/api-client':
-        specifier: workspace:*
-        version: link:../../packages/api-client
       next:
         specifier: 16.1.6
         version: 16.1.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -51,15 +48,6 @@ importers:
 
   apps/site:
     dependencies:
-      '@dictum/api-client':
-        specifier: workspace:*
-        version: link:../../packages/api-client
-      '@dictum/rendering':
-        specifier: workspace:*
-        version: link:../../packages/rendering
-      '@dictum/site-kit':
-        specifier: workspace:*
-        version: link:../../packages/site-kit
       next:
         specifier: 16.1.6
         version: 16.1.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
