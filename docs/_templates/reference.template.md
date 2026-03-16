@@ -11,15 +11,12 @@ summary:
 
 # Title
 
-## Purpose
+State the contract, structure, or schema directly.
 
-State what factual material this document defines.
+## Structure
 
-## Specification
+Describe the layout, schema, or contract.
 
-Describe the structure, schema, contract, or definitions directly.
+## Rules
 
-## Notes
-
-- Add clarifying notes only when they help interpretation.
-
+- State the authoritative rules plainly.
