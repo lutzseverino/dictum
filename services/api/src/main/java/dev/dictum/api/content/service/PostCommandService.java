@@ -7,7 +7,7 @@ import dev.dictum.api.content.model.vo.PostPatch;
 import dev.dictum.api.content.model.vo.PostSlug;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.model.vo.PostTags;
-import dev.dictum.api.content.repository.InMemoryPostStore;
+import dev.dictum.api.content.repository.PostRepository;
 import dev.dictum.api.content.rule.PostPatchValidator;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
@@ -26,17 +26,17 @@ public class PostCommandService {
   private static final String STYLESHEET_FILENAME = "style.css";
   private static final String META_FILENAME = "meta.json";
 
-  private final InMemoryPostStore postStore;
+  private final PostRepository postRepository;
   private final PostApiMapper postApiMapper;
   private final PostPatchValidator postPatchValidator;
   private final MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   PostCommandService(
-      InMemoryPostStore postStore,
+      PostRepository postRepository,
       PostApiMapper postApiMapper,
       PostPatchValidator postPatchValidator,
       MergePatchDocumentAccessor mergePatchDocumentAccessor) {
-    this.postStore = postStore;
+    this.postRepository = postRepository;
     this.postApiMapper = postApiMapper;
     this.postPatchValidator = postPatchValidator;
     this.mergePatchDocumentAccessor = mergePatchDocumentAccessor;
@@ -45,7 +45,7 @@ public class PostCommandService {
   public PostResponse create(CreatePostRequest request) {
     String slug = new PostSlug(request.getSlug()).value();
 
-    if (postStore.exists(slug)) {
+    if (postRepository.exists(slug)) {
       throw new PostConflictException("A post already exists for slug " + slug);
     }
 
@@ -60,11 +60,12 @@ public class PostCommandService {
             new PostTags(request.getTags()).values(),
             request.getStylesheet() != null,
             request.getBody(),
+            request.getStylesheet(),
             contentPathFor(slug),
             request.getStylesheet() != null ? stylesheetPathFor(slug) : null,
             metaPathFor(slug));
 
-    return postApiMapper.toResponse(postStore.save(created));
+    return postApiMapper.toResponse(postRepository.save(created));
   }
 
   public PostResponse update(String slug, UpdatePostRequest request) {
@@ -72,7 +73,7 @@ public class PostCommandService {
     PostPatch patch = readPatch(request);
     postPatchValidator.validate(patch);
 
-    return postApiMapper.toResponse(postStore.save(updatedState(slug, current, patch)));
+    return postApiMapper.toResponse(postRepository.save(updatedState(slug, current, patch)));
   }
 
   public PostResponse publish(String slug) {
@@ -93,17 +94,18 @@ public class PostCommandService {
             current.tags(),
             current.hasStylesheet(),
             current.body(),
+            current.stylesheetContent(),
             current.contentPath(),
             current.stylesheetPath(),
             current.metaPath());
 
-    return postApiMapper.toResponse(postStore.save(published));
+    return postApiMapper.toResponse(postRepository.save(published));
   }
 
   private PostState requireState(String slug) {
     String validatedSlug = new PostSlug(slug).value();
 
-    return postStore
+    return postRepository
         .findBySlug(validatedSlug)
         .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
   }
@@ -138,6 +140,7 @@ public class PostCommandService {
         patch.tags().isPresent() ? new PostTags(patch.tags().value()).values() : current.tags(),
         stylesheetPath != null,
         patch.body().isPresent() ? patch.body().value() : current.body(),
+        resolveStylesheetContent(current.stylesheetContent(), patch),
         current.contentPath(),
         stylesheetPath,
         current.metaPath());
@@ -153,6 +156,18 @@ public class PostCommandService {
     }
 
     return currentStylesheetPath;
+  }
+
+  private String resolveStylesheetContent(String currentStylesheetContent, PostPatch patch) {
+    if (Boolean.TRUE.equals(patch.removeStylesheet().value())) {
+      return null;
+    }
+
+    if (patch.stylesheet().isPresent()) {
+      return patch.stylesheet().value();
+    }
+
+    return currentStylesheetContent;
   }
 
   private String postAssetPath(String slug, String filename) {
