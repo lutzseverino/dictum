@@ -1,0 +1,53 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - name: Skip when SonarQube is not configured
+        if: ${{ env.SONAR_HOST_URL == '' || env.SONAR_TOKEN == '' }}
+        run: echo "Skipping SonarQube workflow because SONAR_HOST_URL or SONAR_TOKEN is not configured."
+
+      - name: Check out repository
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
+
+      - name: Set up Node.js
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Set up Java
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Run SonarQube validation
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' }}
+        run: pnpm sonar:validate

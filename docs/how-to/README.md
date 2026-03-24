@@ -16,3 +16,4 @@ Task-oriented guides for contributors and operators.
 ## Documents
 
 - [Run Java API Quality Checks](./run-java-api-quality-checks.md)
+- [Run SonarQube Analysis](./run-sonarqube-analysis.md)
