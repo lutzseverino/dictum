@@ -2,8 +2,8 @@ node_modules
 .next
 dist
 coverage
+.scannerwork
 .DS_Store
 target
 .idea
 .vscode
-
