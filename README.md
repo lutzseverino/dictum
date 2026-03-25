@@ -51,20 +51,22 @@ dictum/
 ## Development
 
 1. Install frontend dependencies from the repo root with `pnpm install`.
-2. Run the admin app with `pnpm dev:admin`.
-3. Run the API with `pnpm dev:api`.
-4. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
-5. Check Java formatting and baseline requirements with `pnpm lint:api`.
-6. Apply Google Java Format to the API with `pnpm format:api`.
-7. Run API tests with `pnpm test:api`.
-8. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
-9. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script can offer Docker-based local setup in an interactive terminal and otherwise warns and skips only the Sonar scan.
+2. Set `DICTUM_CONTENT_ROOT` to the root of a content repository that matches the Dictum content contract.
+3. Run the admin app with `pnpm dev:admin`.
+4. Run the API with `pnpm dev:api`.
+5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
+6. Check Java formatting and baseline requirements with `pnpm lint:api`.
+7. Apply Google Java Format to the API with `pnpm format:api`.
+8. Run API tests with `pnpm test:api`.
+9. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
+10. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script can offer Docker-based local setup in an interactive terminal and otherwise warns and skips only the Sonar scan.
 
 ## Content Model
 
-- The content source of truth lives in a separate `dictum-content` repository.
+- The content source of truth lives in an external content repository.
 - Posts remain markdown-first.
 - Per-post styling is represented as optional plain CSS sidecars, not embedded Tailwind utilities in markdown.
+- The API reads and writes that repository through `dictum.content.root` / `DICTUM_CONTENT_ROOT`.
 
 See [docs/reference/content-repository-contract.md](./docs/reference/content-repository-contract.md) for the expected content layout.
 

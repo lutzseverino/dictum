@@ -41,7 +41,6 @@ export interface BlogContentService {
 }
 
 export interface ContentRepositoryContract {
-  repositoryName: "dictum-content";
   postsRoot: "posts";
   settingsFile: "settings/site.json";
   postFileName: "index.md";
@@ -50,7 +49,6 @@ export interface ContentRepositoryContract {
 }
 
 export const dictumContentContract: ContentRepositoryContract = {
-  repositoryName: "dictum-content",
   postsRoot: "posts",
   settingsFile: "settings/site.json",
   postFileName: "index.md",
