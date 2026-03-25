@@ -1,5 +1,7 @@
 package dev.dictum.api.content.controller;
 
+import dev.dictum.api.content.factory.PostApiInputFactory;
+import dev.dictum.api.content.mapper.PostApiMapper;
 import dev.dictum.api.content.service.PostCommandService;
 import dev.dictum.api.content.service.PostQueryService;
 import dev.dictum.api.generated.api.PostsApi;
@@ -17,22 +19,32 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Validated
 public class PostsController implements PostsApi {
 
+  private final PostApiInputFactory postApiInputFactory;
+  private final PostApiMapper postApiMapper;
   private final PostQueryService postQueryService;
   private final PostCommandService postCommandService;
 
-  PostsController(PostQueryService postQueryService, PostCommandService postCommandService) {
+  PostsController(
+      PostApiInputFactory postApiInputFactory,
+      PostApiMapper postApiMapper,
+      PostQueryService postQueryService,
+      PostCommandService postCommandService) {
+    this.postApiInputFactory = postApiInputFactory;
+    this.postApiMapper = postApiMapper;
     this.postQueryService = postQueryService;
     this.postCommandService = postCommandService;
   }
 
   @Override
   public ResponseEntity<List<PostSummary>> listPosts() {
-    return ResponseEntity.ok(postQueryService.listResponses());
+    return ResponseEntity.ok(postApiMapper.toSummaries(postQueryService.list()));
   }
 
   @Override
   public ResponseEntity<PostResponse> createPost(CreatePostRequest createPostRequest) {
-    PostResponse response = postCommandService.create(createPostRequest);
+    PostResponse response =
+        postApiMapper.toResponse(
+            postCommandService.create(postApiInputFactory.toCreateCommand(createPostRequest)));
     return ResponseEntity.created(
             UriComponentsBuilder.fromPath("/api/v1/posts/{slug}")
                 .buildAndExpand(response.getSlug())
@@ -42,16 +54,18 @@ public class PostsController implements PostsApi {
 
   @Override
   public ResponseEntity<PostResponse> getPost(String slug) {
-    return ResponseEntity.ok(postQueryService.getResponse(slug));
+    return ResponseEntity.ok(postApiMapper.toResponse(postQueryService.get(slug)));
   }
 
   @Override
   public ResponseEntity<PostResponse> updatePost(String slug, UpdatePostRequest updatePostRequest) {
-    return ResponseEntity.ok(postCommandService.update(slug, updatePostRequest));
+    return ResponseEntity.ok(
+        postApiMapper.toResponse(
+            postCommandService.update(slug, postApiInputFactory.toPatch(updatePostRequest))));
   }
 
   @Override
   public ResponseEntity<PostResponse> publishPost(String slug) {
-    return ResponseEntity.ok(postCommandService.publish(slug));
+    return ResponseEntity.ok(postApiMapper.toResponse(postCommandService.publish(slug)));
   }
 }

@@ -10,10 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FilesystemSiteSettingsStore implements SiteSettingsStore {
-
-  private static final String SETTINGS_DIRECTORY = "settings";
-  private static final String SITE_SETTINGS_FILENAME = "site.json";
-
   private final Path settingsFile;
   private final ObjectMapper objectMapper;
 

@@ -1,7 +1,7 @@
 package dev.dictum.api.web.patch;
 
 import dev.dictum.api.web.error.InvalidPatchRequestException;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record PatchValue<T>(boolean present, boolean explicitNull, @Nullable T value) {
 
