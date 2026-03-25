@@ -3,13 +3,17 @@ title: Documentation
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-16
+updated: 2026-03-25
 owner: Engineering
 doc-type: index
 summary: Define the documentation standards for Dictum using Diataxis, MADR, and OpenAPI.
 ---
 
 # Documentation
+
+## Purpose
+
+Organize Dictum documentation around durable standards so contributor guidance, architecture context, API contracts, and decision history stay easy to navigate as the project evolves.
 
 Dictum uses:
 
@@ -38,9 +42,14 @@ Dictum uses:
 
 - Use YAML frontmatter in every tracked document.
 - Keep metadata explicit: title, status, author, created, updated, owner, doc-type, and summary.
-- Treat structure and writing style as separate concerns.
+- Place content in the Diataxis area that matches the reader need.
+- Tutorials teach a full outcome for readers who are still learning.
+- How-to guides assume the reader already knows the goal and needs concise task steps.
+- Reference documents should stay authoritative, factual, and easy to scan.
+- Explanation documents should read as stable conceptual guidance; move proposals and tradeoff records into decision documents.
+- Use `docs/decisions/` only for durable choices with meaningful tradeoffs.
 - Product-facing docs and reference docs should be direct and declarative.
-- Explanation docs may include rationale, tradeoffs, and conceptual framing.
+- Explanation docs may include rationale, tradeoffs, and conceptual framing when they help the reader understand the current system model.
 - Decision docs should use MADR structure.
 - How-to guides should stay task-first.
 - Keep machine-readable HTTP contracts under `docs/openapi/`.

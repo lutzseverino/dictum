@@ -3,7 +3,7 @@ title: Documentation Templates
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-16
+updated: 2026-03-25
 owner: Engineering
 doc-type: index
 summary: Provide starting points for Dictum documentation while preserving doc-type-specific writing rules.
@@ -30,11 +30,11 @@ Use these templates to preserve Dictum's documentation structure without forcing
 
 ## Writing Rules By Doc Type
 
-- `index`: short directory or section map, minimal prose
+- `index`: short directory or section map; include purpose and scope notes when the section boundary would otherwise be ambiguous
 - `reference`: factual, contract-first, no rationale unless absolutely required for interpretation
 - `how-to`: task-first instructions and verification
 - `tutorial`: guided learning sequence for a full outcome
-- `explanation`: conceptual rationale and tradeoffs
+- `explanation`: stable conceptual guidance; avoid proposal or checklist framing
 - `decision`: MADR decision record with context, decision, consequences, and alternatives
 
 ## Usage Rules

@@ -3,7 +3,7 @@ title: Decision Records
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-16
+updated: 2026-03-25
 owner: Engineering
 doc-type: index
 summary: Index MADR-style decision records for Dictum.
@@ -11,7 +11,9 @@ summary: Index MADR-style decision records for Dictum.
 
 # Decision Records
 
-MADR-style decision records for durable engineering and architecture choices.
+## Purpose
+
+Preserve durable decisions, tradeoffs, and rejected alternatives so future contributors can understand why Dictum chose a particular path.
 
 ## Documents
 
