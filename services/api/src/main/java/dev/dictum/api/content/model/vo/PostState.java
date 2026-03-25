@@ -15,7 +15,4 @@ public record PostState(
     List<String> tags,
     boolean hasStylesheet,
     String body,
-    String stylesheetContent,
-    String contentPath,
-    String stylesheetPath,
-    String metaPath) {}
+    String stylesheetContent) {}
