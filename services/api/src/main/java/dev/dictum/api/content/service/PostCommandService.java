@@ -56,7 +56,8 @@ public class PostCommandService {
     PostState current = requireState(slug);
     patch.validate();
 
-    return postStore.save(patch.applyTo(current, resolveStylesheetPath(slug, current.stylesheetPath(), patch)));
+    return postStore.save(
+        patch.applyTo(current, resolveStylesheetPath(slug, current.stylesheetPath(), patch)));
   }
 
   public PostState publish(String slug) {
