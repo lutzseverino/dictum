@@ -1,4 +1,4 @@
-package dev.dictum.api.content.repository;
+package dev.dictum.api.content.store;
 
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
@@ -9,19 +9,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@ConditionalOnProperty(
-    name = "dictum.content.repository",
-    havingValue = "in-memory",
-    matchIfMissing = true)
-public class InMemoryPostRepository implements PostRepository {
+public class InMemoryPostStore implements PostStore {
 
   private final Map<String, PostState> posts = new LinkedHashMap<>();
 
-  public InMemoryPostRepository() {
+  public InMemoryPostStore() {
     PostState firstPost =
         new PostState(
             "dictum-begins",

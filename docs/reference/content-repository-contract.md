@@ -3,15 +3,15 @@ title: Content Repository Contract
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-15
+updated: 2026-03-25
 owner: Engineering
 doc-type: reference
-summary: Define the expected structure of the external dictum-content repository.
+summary: Define the expected structure of Dictum's external content repository.
 ---
 
 # Content Repository Contract
 
-Content lives in a separate `dictum-content` repository with this shape:
+Content lives in an external repository with this shape:
 
 ```text
 posts/
@@ -47,3 +47,14 @@ status: published
 ```
 
 The markdown body begins after the closing `---` frontmatter boundary.
+
+## Runtime Configuration
+
+Dictum uses the filesystem-backed content repository by default.
+
+Set one of these before starting the API:
+
+- `dictum.content.root`
+- `DICTUM_CONTENT_ROOT`
+
+The configured path must point at the repository root that contains `posts/` and `settings/site.json`.

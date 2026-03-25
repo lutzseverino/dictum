@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
 import dev.dictum.api.site.mapper.SiteSettingsApiMapperImpl;
-import dev.dictum.api.site.repository.InMemorySiteSettingsRepository;
 import dev.dictum.api.site.rule.SiteSettingsPatchRequiredValuesRule;
 import dev.dictum.api.site.rule.SiteSettingsPatchValidator;
+import dev.dictum.api.site.store.InMemorySiteSettingsStore;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
@@ -35,7 +35,7 @@ class SiteSettingsCommandServiceTest {
   void setUp() {
     siteSettingsCommandService =
         new SiteSettingsCommandService(
-            new InMemorySiteSettingsRepository(),
+            new InMemorySiteSettingsStore(),
             new SiteSettingsApiMapperImpl(),
             new SiteSettingsPatchValidator(List.of(new SiteSettingsPatchRequiredValuesRule())),
             mergePatchDocumentAccessor);

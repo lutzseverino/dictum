@@ -1,4 +1,4 @@
-package dev.dictum.api.content.repository;
+package dev.dictum.api.content.store;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import dev.dictum.api.config.FilesystemContentRoot;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
@@ -19,15 +20,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@ConditionalOnProperty(name = "dictum.content.repository", havingValue = "filesystem")
-public class FilesystemPostRepository implements PostRepository {
+public class FilesystemPostStore implements PostStore {
 
-  private static final String POSTS_DIRECTORY = "posts";
   private static final String CONTENT_FILENAME = "index.md";
   private static final String STYLESHEET_FILENAME = "style.css";
   private static final String META_FILENAME = "meta.json";
@@ -38,16 +33,16 @@ public class FilesystemPostRepository implements PostRepository {
   private final YAMLMapper yamlMapper;
   private final ObjectMapper jsonMapper;
 
-  public FilesystemPostRepository(@Value("${dictum.content.root}") String configuredRoot) {
-    this.contentRoot = validateRoot(configuredRoot);
-    this.postsRoot = contentRoot.resolve(POSTS_DIRECTORY);
+  public FilesystemPostStore(FilesystemContentRoot contentRoot) {
+    this.contentRoot = contentRoot.root();
+    this.postsRoot = contentRoot.postsRoot();
     this.yamlMapper =
         new YAMLMapper(
             YAMLFactory.builder().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER).build());
     yamlMapper.findAndRegisterModules();
-    yamlMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    yamlMapper.setDefaultPropertyInclusion(
+        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.ALWAYS));
     this.jsonMapper = new ObjectMapper().findAndRegisterModules();
-    createPostsRoot();
   }
 
   @Override
@@ -91,14 +86,6 @@ public class FilesystemPostRepository implements PostRepository {
     } catch (IOException exception) {
       throw new UncheckedIOException(
           "Failed to write post " + state.slug() + " to content repository", exception);
-    }
-  }
-
-  private void createPostsRoot() {
-    try {
-      Files.createDirectories(postsRoot);
-    } catch (IOException exception) {
-      throw new UncheckedIOException("Failed to initialize posts directory", exception);
     }
   }
 
@@ -167,13 +154,13 @@ public class FilesystemPostRepository implements PostRepository {
             state.template(),
             state.status());
 
-    StringBuilder markdown = new StringBuilder();
-    markdown.append(FRONTMATTER_BOUNDARY);
-    markdown.append(yamlMapper.writeValueAsString(frontmatter));
-    markdown.append(FRONTMATTER_BOUNDARY);
-    markdown.append(state.body());
+    String markdown =
+        FRONTMATTER_BOUNDARY
+            + yamlMapper.writeValueAsString(frontmatter)
+            + FRONTMATTER_BOUNDARY
+            + state.body();
 
-    Files.writeString(contentPath, markdown.toString(), StandardCharsets.UTF_8);
+    Files.writeString(contentPath, markdown, StandardCharsets.UTF_8);
   }
 
   private void writeStylesheet(Path stylesheetPath, PostState state) throws IOException {
@@ -201,15 +188,6 @@ public class FilesystemPostRepository implements PostRepository {
 
   private String relativePath(Path file) {
     return contentRoot.relativize(file).toString().replace('\\', '/');
-  }
-
-  private static Path validateRoot(String configuredRoot) {
-    if (configuredRoot == null || configuredRoot.isBlank()) {
-      throw new IllegalStateException(
-          "Property dictum.content.root must be configured when using the filesystem repository");
-    }
-
-    return Path.of(configuredRoot);
   }
 
   private void validateDirectorySlug(String directorySlug, String frontmatterSlug) {
