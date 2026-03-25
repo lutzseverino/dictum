@@ -1,18 +1,13 @@
-package dev.dictum.api.content.rule;
+package dev.dictum.api.content.model.vo;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.dictum.api.content.model.vo.PostPatch;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.PatchValue;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class PostPatchValidatorTest {
-
-  private final PostPatchValidator postPatchValidator =
-      new PostPatchValidator(List.of(new PostPatchRequiredValuesRule()));
+class PostPatchTest {
 
   @Test
   void validateRejectsExplicitNullTags() {
@@ -26,7 +21,7 @@ class PostPatchValidatorTest {
             PatchValue.absent(),
             PatchValue.absent());
 
-    assertThatThrownBy(() -> postPatchValidator.validate(patch))
+    assertThatThrownBy(patch::validate)
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field tags cannot be null");
   }
@@ -43,6 +38,6 @@ class PostPatchValidatorTest {
             PatchValue.explicitNullValue(),
             PatchValue.absent());
 
-    assertThatCode(() -> postPatchValidator.validate(patch)).doesNotThrowAnyException();
+    assertThatCode(patch::validate).doesNotThrowAnyException();
   }
 }

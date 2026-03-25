@@ -38,7 +38,7 @@ class FilesystemHttpContractTest {
 
   @DynamicPropertySource
   static void registerProperties(DynamicPropertyRegistry registry) {
-    registry.add("dictum.content.root", () -> CONTENT_ROOT.toString());
+    registry.add("dictum.content.root", CONTENT_ROOT::toString);
   }
 
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -98,12 +98,12 @@ class FilesystemHttpContractTest {
       builder.header("Content-Type", contentType);
     }
 
-    HttpRequest request =
-        switch (method) {
-          case "PATCH" ->
-              builder.method("PATCH", HttpRequest.BodyPublishers.ofString(body)).build();
-          default -> builder.GET().build();
-        };
+    HttpRequest request;
+    if ("PATCH".equals(method)) {
+      request = builder.method("PATCH", HttpRequest.BodyPublishers.ofString(body)).build();
+    } else {
+      request = builder.GET().build();
+    }
 
     return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
   }

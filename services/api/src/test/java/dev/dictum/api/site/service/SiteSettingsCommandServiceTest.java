@@ -2,75 +2,68 @@ package dev.dictum.api.site.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
-import dev.dictum.api.site.mapper.SiteSettingsApiMapperImpl;
-import dev.dictum.api.site.rule.SiteSettingsPatchRequiredValuesRule;
-import dev.dictum.api.site.rule.SiteSettingsPatchValidator;
+import dev.dictum.api.site.model.vo.SiteSettingsPatch;
+import dev.dictum.api.site.model.vo.SiteSettingsState;
 import dev.dictum.api.site.store.InMemorySiteSettingsStore;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
-import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
 import java.io.IOException;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class SiteSettingsCommandServiceTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-  @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   private SiteSettingsCommandService siteSettingsCommandService;
 
   @BeforeEach
   void setUp() {
-    siteSettingsCommandService =
-        new SiteSettingsCommandService(
-            new InMemorySiteSettingsStore(),
-            new SiteSettingsApiMapperImpl(),
-            new SiteSettingsPatchValidator(List.of(new SiteSettingsPatchRequiredValuesRule())),
-            mergePatchDocumentAccessor);
+    siteSettingsCommandService = new SiteSettingsCommandService(new InMemorySiteSettingsStore());
   }
 
   @Test
   void updateChangesOnlyTheProvidedFields() {
-    when(mergePatchDocumentAccessor.currentDocument())
-        .thenReturn(
-            patchDocument(
-                """
-                {
-                  "subtitle": "A modular markdown blog platform.",
-                  "motd": "API-first contract work is underway."
-                }
-                """));
+    UpdateSiteSettingsRequest request =
+        new UpdateSiteSettingsRequest()
+            .subtitle("A modular markdown blog platform.")
+            .motd("API-first contract work is underway.");
+    MergePatchDocument document =
+        patchDocument(
+            """
+            {
+              "subtitle": "A modular markdown blog platform.",
+              "motd": "API-first contract work is underway."
+            }
+            """);
 
-    SiteSettingsResponse response =
+    SiteSettingsState updated =
         siteSettingsCommandService.update(
-            new UpdateSiteSettingsRequest()
-                .subtitle("A modular markdown blog platform.")
-                .motd("API-first contract work is underway."));
+            new SiteSettingsPatch(
+                document.field("title", request.getTitle()),
+                document.field("subtitle", request.getSubtitle()),
+                document.field("motd", request.getMotd())));
 
-    assertThat(response.getTitle()).isEqualTo("Dictum");
-    assertThat(response.getSubtitle()).isEqualTo("A modular markdown blog platform.");
-    assertThat(response.getMotd()).isEqualTo("API-first contract work is underway.");
+    assertThat(updated.title()).isEqualTo("Dictum");
+    assertThat(updated.subtitle()).isEqualTo("A modular markdown blog platform.");
+    assertThat(updated.motd()).isEqualTo("API-first contract work is underway.");
   }
 
   @Test
   void updateRejectsExplicitNullForPresentFields() {
-    when(mergePatchDocumentAccessor.currentDocument())
-        .thenReturn(patchDocument("{\"subtitle\":null}"));
+    UpdateSiteSettingsRequest request = new UpdateSiteSettingsRequest().subtitle(null);
+    MergePatchDocument document = patchDocument("{\"subtitle\":null}");
 
     assertThatThrownBy(
-            () -> siteSettingsCommandService.update(new UpdateSiteSettingsRequest().subtitle(null)))
+            () ->
+                siteSettingsCommandService.update(
+                    new SiteSettingsPatch(
+                        document.field("title", request.getTitle()),
+                        document.field("subtitle", request.getSubtitle()),
+                        document.field("motd", request.getMotd()))))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field subtitle cannot be null");
   }

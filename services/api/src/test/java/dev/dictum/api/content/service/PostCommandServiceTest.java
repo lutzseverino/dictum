@@ -2,32 +2,25 @@ package dev.dictum.api.content.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.dictum.api.content.command.CreatePostCommand;
+import dev.dictum.api.content.error.InvalidPostRequestException;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
-import dev.dictum.api.content.mapper.PostApiMapperImpl;
-import dev.dictum.api.content.rule.PostPatchRequiredValuesRule;
-import dev.dictum.api.content.rule.PostPatchValidator;
+import dev.dictum.api.content.model.vo.PostPatch;
+import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.store.InMemoryPostStore;
-import dev.dictum.api.generated.model.CreatePostRequest;
-import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
-import dev.dictum.api.generated.model.UpdatePostRequest;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
-import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class PostCommandServiceTest {
 
   private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
@@ -36,109 +29,111 @@ class PostCommandServiceTest {
   private static final String ADMIN_TAG = "admin";
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
-
   private InMemoryPostStore postStore;
   private PostCommandService postCommandService;
 
   @BeforeEach
   void setUp() {
     postStore = new InMemoryPostStore();
-    postCommandService =
-        new PostCommandService(
-            postStore,
-            new PostApiMapperImpl(),
-            new PostPatchValidator(List.of(new PostPatchRequiredValuesRule())),
-            mergePatchDocumentAccessor);
+    postCommandService = new PostCommandService(postStore);
   }
 
   @Test
   void createPersistsADraftPostWithDerivedPaths() {
-    CreatePostRequest request =
-        new CreatePostRequest(
-                "Notes on Remote Editing",
-                NOTES_ON_REMOTE_EDITING_SLUG,
-                "First thoughts on a phone-first publishing workflow.",
-                PostTemplate.NOTE,
-                List.of("product", "mobile"),
-                "Remote editing should stay lightweight.")
-            .stylesheet("body { color: tomato; }");
+    CreatePostCommand command =
+        new CreatePostCommand(
+            "Notes on Remote Editing",
+            NOTES_ON_REMOTE_EDITING_SLUG,
+            "First thoughts on a phone-first publishing workflow.",
+            PostTemplate.NOTE,
+            List.of("product", "mobile"),
+            "Remote editing should stay lightweight.",
+            "body { color: tomato; }");
 
-    PostResponse response = postCommandService.create(request);
+    PostState created = postCommandService.create(command);
 
-    assertThat(response.getSlug()).isEqualTo(NOTES_ON_REMOTE_EDITING_SLUG);
-    assertThat(response.getStatus()).isEqualTo(PostStatus.DRAFT);
-    assertThat(response.getHasStylesheet()).isTrue();
-    assertThat(response.getContentPath())
+    assertThat(created.slug()).isEqualTo(NOTES_ON_REMOTE_EDITING_SLUG);
+    assertThat(created.status()).isEqualTo(PostStatus.DRAFT);
+    assertThat(created.hasStylesheet()).isTrue();
+    assertThat(created.contentPath())
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/index.md");
-    assertThat(response.getStylesheetPath())
+    assertThat(created.stylesheetPath())
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/style.css");
     assertThat(postStore.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
   }
 
   @Test
   void createRejectsDuplicateSlugs() {
-    CreatePostRequest request =
-        new CreatePostRequest(
+    CreatePostCommand command =
+        new CreatePostCommand(
             "Duplicate",
             DICTUM_BEGINS_SLUG,
             "Already exists.",
             PostTemplate.ESSAY,
             List.of("architecture"),
-            "Duplicate body.");
+            "Duplicate body.",
+            null);
 
-    assertThatThrownBy(() -> postCommandService.create(request))
+    assertThatThrownBy(() -> postCommandService.create(command))
         .isInstanceOf(PostConflictException.class)
         .hasMessage("A post already exists for slug " + DICTUM_BEGINS_SLUG);
   }
 
   @Test
+  void createRejectsTagListsContainingNullEntries() {
+    List<String> tags = new ArrayList<>(List.of("news"));
+    tags.add(null);
+
+    CreatePostCommand command =
+        new CreatePostCommand(
+            "Bad tags", "bad-tags", "Contains a null tag.", PostTemplate.NOTE, tags, "Body.", null);
+
+    assertThatThrownBy(() -> postCommandService.create(command))
+        .isInstanceOf(InvalidPostRequestException.class)
+        .hasMessage("Field tags cannot contain blank values");
+  }
+
+  @Test
   void updateChangesOnlyTheProvidedFields() {
-    when(mergePatchDocumentAccessor.currentDocument())
-        .thenReturn(
-            patchDocument("{\"title\":\"Remote Controls, Sooner\",\"tags\":[\"admin\",\"api\"]}"));
+    PostPatch patch =
+        patch(
+            "{\"title\":\"Remote Controls, Sooner\",\"tags\":[\"admin\",\"api\"]}",
+            "Remote Controls, Sooner",
+            List.of(ADMIN_TAG, "api"));
 
-    UpdatePostRequest request =
-        new UpdatePostRequest().title("Remote Controls, Sooner").tags(List.of(ADMIN_TAG, "api"));
+    PostState updated = postCommandService.update(REMOTE_CONTROLS_LATER_SLUG, patch);
 
-    PostResponse response = postCommandService.update(REMOTE_CONTROLS_LATER_SLUG, request);
-
-    assertThat(response.getTitle()).isEqualTo("Remote Controls, Sooner");
-    assertThat(response.getExcerpt())
+    assertThat(updated.title()).isEqualTo("Remote Controls, Sooner");
+    assertThat(updated.excerpt())
         .isEqualTo("The admin experience will later own publish and settings mutations.");
-    assertThat(response.getTags()).containsExactly(ADMIN_TAG, "api");
+    assertThat(updated.tags()).containsExactly(ADMIN_TAG, "api");
   }
 
   @Test
   void updateRemovesTheStylesheetWhenTheFieldIsPatchedToNull() {
-    when(mergePatchDocumentAccessor.currentDocument())
-        .thenReturn(patchDocument("{\"stylesheet\":null}"));
+    PostState updated =
+        postCommandService.update(DICTUM_BEGINS_SLUG, patch("{\"stylesheet\":null}", null, null));
 
-    PostResponse response =
-        postCommandService.update(DICTUM_BEGINS_SLUG, new UpdatePostRequest().stylesheet(null));
-
-    assertThat(response.getHasStylesheet()).isFalse();
-    assertThat(response.getStylesheetPath()).isNull();
+    assertThat(updated.hasStylesheet()).isFalse();
+    assertThat(updated.stylesheetPath()).isNull();
   }
 
   @Test
   void updateRejectsExplicitNullTags() {
-    when(mergePatchDocumentAccessor.currentDocument()).thenReturn(patchDocument("{\"tags\":null}"));
-
     assertThatThrownBy(
             () ->
                 postCommandService.update(
-                    REMOTE_CONTROLS_LATER_SLUG, new UpdatePostRequest().tags(List.of(ADMIN_TAG))))
+                    REMOTE_CONTROLS_LATER_SLUG, patch("{\"tags\":null}", null, null)))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field tags cannot be null");
   }
 
   @Test
   void publishTransitionsTheDraftToPublished() {
-    PostResponse response = postCommandService.publish(REMOTE_CONTROLS_LATER_SLUG);
+    PostState published = postCommandService.publish(REMOTE_CONTROLS_LATER_SLUG);
 
-    assertThat(response.getStatus()).isEqualTo(PostStatus.PUBLISHED);
-    assertThat(response.getPublishedAt()).isNotNull();
+    assertThat(published.status()).isEqualTo(PostStatus.PUBLISHED);
+    assertThat(published.publishedAt()).isNotNull();
   }
 
   @Test
@@ -151,9 +146,26 @@ class PostCommandServiceTest {
   @Test
   void updateRejectsUnknownSlugs() {
     assertThatThrownBy(
-            () -> postCommandService.update("unknown-slug", new UpdatePostRequest().title("Nope")))
+            () ->
+                postCommandService.update(
+                    "unknown-slug", patch("{\"title\":\"Nope\"}", "Nope", null)))
         .isInstanceOf(PostNotFoundException.class)
         .hasMessage("No post exists for slug unknown-slug");
+  }
+
+  private PostPatch patch(String json, String title, List<String> tags) {
+    dev.dictum.api.generated.model.UpdatePostRequest request =
+        new dev.dictum.api.generated.model.UpdatePostRequest().title(title).tags(tags);
+    MergePatchDocument document = patchDocument(json);
+
+    return new PostPatch(
+        document.field("title", request.getTitle()),
+        document.field("excerpt", request.getExcerpt()),
+        document.field("template", request.getTemplate()),
+        document.field("tags", request.getTags()),
+        document.field("body", request.getBody()),
+        document.field("stylesheet", request.getStylesheet()),
+        document.field("removeStylesheet", request.getRemoveStylesheet()));
   }
 
   private MergePatchDocument patchDocument(String json) {

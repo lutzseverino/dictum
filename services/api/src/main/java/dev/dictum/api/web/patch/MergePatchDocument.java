@@ -2,7 +2,7 @@ package dev.dictum.api.web.patch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class MergePatchDocument {
 
