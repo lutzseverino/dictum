@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 public class FilesystemPostRepository implements PostRepository {
 
-  private static final String POSTS_DIRECTORY = "posts";
   private static final String CONTENT_FILENAME = "index.md";
   private static final String STYLESHEET_FILENAME = "style.css";
   private static final String META_FILENAME = "meta.json";
@@ -41,7 +40,8 @@ public class FilesystemPostRepository implements PostRepository {
         new YAMLMapper(
             YAMLFactory.builder().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER).build());
     yamlMapper.findAndRegisterModules();
-    yamlMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    yamlMapper.setDefaultPropertyInclusion(
+        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.ALWAYS));
     this.jsonMapper = new ObjectMapper().findAndRegisterModules();
   }
 
@@ -154,13 +154,13 @@ public class FilesystemPostRepository implements PostRepository {
             state.template(),
             state.status());
 
-    StringBuilder markdown = new StringBuilder();
-    markdown.append(FRONTMATTER_BOUNDARY);
-    markdown.append(yamlMapper.writeValueAsString(frontmatter));
-    markdown.append(FRONTMATTER_BOUNDARY);
-    markdown.append(state.body());
+    String markdown =
+        FRONTMATTER_BOUNDARY
+            + yamlMapper.writeValueAsString(frontmatter)
+            + FRONTMATTER_BOUNDARY
+            + state.body();
 
-    Files.writeString(contentPath, markdown.toString(), StandardCharsets.UTF_8);
+    Files.writeString(contentPath, markdown, StandardCharsets.UTF_8);
   }
 
   private void writeStylesheet(Path stylesheetPath, PostState state) throws IOException {
