@@ -11,16 +11,20 @@ summary:
 
 # Title
 
-## Problem
+## Purpose
 
-Describe the conceptual problem or architectural question.
+State the conceptual question, model, or boundary this document explains.
 
-## Explanation
+## Overview
 
-Explain the model, tradeoffs, and reasoning.
+Explain the current system model directly.
 
-## Consequences
+## Key Concepts
 
-- Positive outcome
-- Cost or tradeoff
+- Concept or boundary
+- Supporting detail
 
+## Implications
+
+- Stable consequence of the current design
+- Important tradeoff or limitation
