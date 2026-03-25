@@ -1,17 +1,20 @@
 package dev.dictum.api.site.model.vo;
 
-import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
-import dev.dictum.api.web.patch.MergePatchDocument;
 import dev.dictum.api.web.patch.PatchValue;
 
 public record SiteSettingsPatch(
     PatchValue<String> title, PatchValue<String> subtitle, PatchValue<String> motd) {
 
-  public static SiteSettingsPatch from(
-      UpdateSiteSettingsRequest request, MergePatchDocument document) {
-    return new SiteSettingsPatch(
-        document.field("title", request.getTitle()),
-        document.field("subtitle", request.getSubtitle()),
-        document.field("motd", request.getMotd()));
+  public void validate() {
+    title().requireNonNullWhenPresent("title");
+    subtitle().requireNonNullWhenPresent("subtitle");
+    motd().requireNonNullWhenPresent("motd");
+  }
+
+  public SiteSettingsState applyTo(SiteSettingsState current) {
+    return new SiteSettingsState(
+        title().isPresent() ? title().value() : current.title(),
+        subtitle().isPresent() ? subtitle().value() : current.subtitle(),
+        motd().isPresent() ? motd().value() : current.motd());
   }
 }
