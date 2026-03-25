@@ -53,10 +53,7 @@ class FilesystemPostStoreTest {
             List.of("product", "mobile"),
             true,
             "Remote editing should stay lightweight.",
-            "body { color: tomato; }",
-            "posts/notes-on-remote-editing/index.md",
-            "posts/notes-on-remote-editing/style.css",
-            "posts/notes-on-remote-editing/meta.json");
+            "body { color: tomato; }");
 
     PostState saved = postStore.save(created);
 
@@ -69,8 +66,7 @@ class FilesystemPostStoreTest {
         .contains("Remote editing should stay lightweight.");
     assertThat(Files.readString(contentRoot.resolve("posts/notes-on-remote-editing/style.css")))
         .isEqualTo("body { color: tomato; }");
-    assertThat(Files.readString(contentRoot.resolve("posts/notes-on-remote-editing/meta.json")))
-        .isEqualTo("{}");
+    assertThat(contentRoot.resolve("posts/notes-on-remote-editing/meta.json")).doesNotExist();
   }
 
   @Test
@@ -90,10 +86,7 @@ class FilesystemPostStoreTest {
             existing.tags(),
             existing.hasStylesheet(),
             existing.body(),
-            existing.stylesheetContent(),
-            existing.contentPath(),
-            existing.stylesheetPath(),
-            existing.metaPath());
+            existing.stylesheetContent());
 
     postStore.save(updated);
 

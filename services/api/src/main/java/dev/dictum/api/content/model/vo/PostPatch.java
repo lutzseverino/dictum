@@ -21,7 +21,9 @@ public record PostPatch(
     removeStylesheet().requireNonNullWhenPresent("removeStylesheet");
   }
 
-  public PostState applyTo(PostState current, String stylesheetPath) {
+  public PostState applyTo(PostState current) {
+    String stylesheetContent = resolveStylesheetContent(current.stylesheetContent());
+
     return new PostState(
         current.slug(),
         title().isPresent() ? title().value() : current.title(),
@@ -30,12 +32,9 @@ public record PostPatch(
         template().isPresent() ? template().value() : current.template(),
         current.publishedAt(),
         tags().isPresent() ? new PostTags(tags().value()).values() : current.tags(),
-        stylesheetPath != null,
+        stylesheetContent != null,
         body().isPresent() ? body().value() : current.body(),
-        resolveStylesheetContent(current.stylesheetContent()),
-        current.contentPath(),
-        stylesheetPath,
-        current.metaPath());
+        stylesheetContent);
   }
 
   private String resolveStylesheetContent(String currentStylesheetContent) {

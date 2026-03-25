@@ -2,7 +2,6 @@ package dev.dictum.api.content.store;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -25,16 +24,12 @@ public class FilesystemPostStore implements PostStore {
 
   private static final String CONTENT_FILENAME = "index.md";
   private static final String STYLESHEET_FILENAME = "style.css";
-  private static final String META_FILENAME = "meta.json";
   private static final String FRONTMATTER_BOUNDARY = "---\n";
 
-  private final Path contentRoot;
   private final Path postsRoot;
   private final YAMLMapper yamlMapper;
-  private final ObjectMapper jsonMapper;
 
   public FilesystemPostStore(FilesystemContentRoot contentRoot) {
-    this.contentRoot = contentRoot.root();
     this.postsRoot = contentRoot.postsRoot();
     this.yamlMapper =
         new YAMLMapper(
@@ -42,7 +37,6 @@ public class FilesystemPostStore implements PostStore {
     yamlMapper.findAndRegisterModules();
     yamlMapper.setDefaultPropertyInclusion(
         JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.ALWAYS));
-    this.jsonMapper = new ObjectMapper().findAndRegisterModules();
   }
 
   @Override
@@ -81,7 +75,6 @@ public class FilesystemPostStore implements PostStore {
       Files.createDirectories(postDirectory);
       writeContent(postDirectory.resolve(CONTENT_FILENAME), state);
       writeStylesheet(postDirectory.resolve(STYLESHEET_FILENAME), state);
-      writeMeta(postDirectory.resolve(META_FILENAME), state);
       return readPost(postDirectory);
     } catch (IOException exception) {
       throw new UncheckedIOException(
@@ -92,7 +85,6 @@ public class FilesystemPostStore implements PostStore {
   private PostState readPost(Path postDirectory) {
     Path contentPath = postDirectory.resolve(CONTENT_FILENAME);
     Path stylesheetPath = postDirectory.resolve(STYLESHEET_FILENAME);
-    Path metaPath = postDirectory.resolve(META_FILENAME);
 
     try {
       MarkdownPostDocument document = parseMarkdown(Files.readString(contentPath));
@@ -111,10 +103,7 @@ public class FilesystemPostStore implements PostStore {
           List.copyOf(document.frontmatter().tags()),
           stylesheetContent != null,
           document.body(),
-          stylesheetContent,
-          relativePath(contentPath),
-          stylesheetContent != null ? relativePath(stylesheetPath) : null,
-          Files.exists(metaPath) ? relativePath(metaPath) : null);
+          stylesheetContent);
     } catch (IOException exception) {
       throw new UncheckedIOException(
           "Failed to read post " + postDirectory.getFileName() + " from content repository",
@@ -170,24 +159,6 @@ public class FilesystemPostStore implements PostStore {
     }
 
     Files.writeString(stylesheetPath, state.stylesheetContent(), StandardCharsets.UTF_8);
-  }
-
-  private void writeMeta(Path metaPath, PostState state) throws IOException {
-    if (state.metaPath() == null) {
-      Files.deleteIfExists(metaPath);
-      return;
-    }
-
-    if (Files.exists(metaPath)) {
-      return;
-    }
-
-    Files.writeString(
-        metaPath, jsonMapper.writeValueAsString(java.util.Map.of()), StandardCharsets.UTF_8);
-  }
-
-  private String relativePath(Path file) {
-    return contentRoot.relativize(file).toString().replace('\\', '/');
   }
 
   private void validateDirectorySlug(String directorySlug, String frontmatterSlug) {

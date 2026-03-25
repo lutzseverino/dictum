@@ -15,11 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PostCommandService {
 
-  private static final String POSTS_DIRECTORY = "posts/";
-  private static final String INDEX_FILENAME = "index.md";
-  private static final String STYLESHEET_FILENAME = "style.css";
-  private static final String META_FILENAME = "meta.json";
-
   private final PostStore postStore;
 
   PostCommandService(PostStore postStore) {
@@ -44,10 +39,7 @@ public class PostCommandService {
             new PostTags(command.tags()).values(),
             command.stylesheet() != null,
             command.body(),
-            command.stylesheet(),
-            contentPathFor(slug),
-            command.stylesheet() != null ? stylesheetPathFor(slug) : null,
-            metaPathFor(slug));
+            command.stylesheet());
 
     return postStore.save(created);
   }
@@ -56,8 +48,7 @@ public class PostCommandService {
     PostState current = requireState(slug);
     patch.validate();
 
-    return postStore.save(
-        patch.applyTo(current, resolveStylesheetPath(slug, current.stylesheetPath(), patch)));
+    return postStore.save(patch.applyTo(current));
   }
 
   public PostState publish(String slug) {
@@ -78,10 +69,7 @@ public class PostCommandService {
             current.tags(),
             current.hasStylesheet(),
             current.body(),
-            current.stylesheetContent(),
-            current.contentPath(),
-            current.stylesheetPath(),
-            current.metaPath());
+            current.stylesheetContent());
 
     return postStore.save(published);
   }
@@ -92,33 +80,5 @@ public class PostCommandService {
     return postStore
         .findBySlug(validatedSlug)
         .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
-  }
-
-  private String contentPathFor(String slug) {
-    return postAssetPath(slug, INDEX_FILENAME);
-  }
-
-  private String stylesheetPathFor(String slug) {
-    return postAssetPath(slug, STYLESHEET_FILENAME);
-  }
-
-  private String metaPathFor(String slug) {
-    return postAssetPath(slug, META_FILENAME);
-  }
-
-  private String resolveStylesheetPath(String slug, String currentStylesheetPath, PostPatch patch) {
-    if (Boolean.TRUE.equals(patch.removeStylesheet().value())) {
-      return null;
-    }
-
-    if (patch.stylesheet().isPresent()) {
-      return patch.stylesheet().value() != null ? stylesheetPathFor(slug) : null;
-    }
-
-    return currentStylesheetPath;
-  }
-
-  private String postAssetPath(String slug, String filename) {
-    return POSTS_DIRECTORY + slug + "/" + filename;
   }
 }
