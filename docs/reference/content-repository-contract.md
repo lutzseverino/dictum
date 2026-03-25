@@ -6,12 +6,12 @@ created: 2026-03-12
 updated: 2026-03-25
 owner: Engineering
 doc-type: reference
-summary: Define the expected structure of the external dictum-content repository.
+summary: Define the expected structure of Dictum's external content repository.
 ---
 
 # Content Repository Contract
 
-Content lives in a separate `dictum-content` repository with this shape:
+Content lives in an external repository with this shape:
 
 ```text
 posts/

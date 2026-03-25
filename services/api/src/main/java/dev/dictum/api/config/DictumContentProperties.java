@@ -24,13 +24,4 @@ public class DictumContentProperties {
   public void setRoot(Path root) {
     this.root = root;
   }
-
-  public Path requireRoot() {
-    if (root == null) {
-      throw new IllegalStateException(
-          "Property dictum.content.root must be configured when using the filesystem repository");
-    }
-
-    return root;
-  }
 }

@@ -1,11 +1,7 @@
 package dev.dictum.api.site.repository;
 
 import dev.dictum.api.site.model.vo.SiteSettingsState;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@ConditionalOnProperty(name = "dictum.content.repository", havingValue = "in-memory")
 public class InMemorySiteSettingsRepository implements SiteSettingsRepository {
 
   private SiteSettingsState siteSettings =

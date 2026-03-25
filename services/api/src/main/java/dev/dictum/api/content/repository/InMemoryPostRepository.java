@@ -9,11 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@ConditionalOnProperty(name = "dictum.content.repository", havingValue = "in-memory")
 public class InMemoryPostRepository implements PostRepository {
 
   private final Map<String, PostState> posts = new LinkedHashMap<>();
