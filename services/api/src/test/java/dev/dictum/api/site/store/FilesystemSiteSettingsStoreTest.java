@@ -1,4 +1,4 @@
-package dev.dictum.api.site.repository;
+package dev.dictum.api.site.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,22 +11,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class FilesystemSiteSettingsRepositoryTest {
+class FilesystemSiteSettingsStoreTest {
 
   @TempDir private Path contentRoot;
 
-  private FilesystemSiteSettingsRepository siteSettingsRepository;
+  private FilesystemSiteSettingsStore siteSettingsStore;
 
   @BeforeEach
   void setUp() {
     FilesystemContentFixture.writeSeed(contentRoot);
-    siteSettingsRepository =
-        new FilesystemSiteSettingsRepository(FilesystemContentRoot.from(contentRoot));
+    siteSettingsStore = new FilesystemSiteSettingsStore(FilesystemContentRoot.from(contentRoot));
   }
 
   @Test
   void getReadsTheSeededSiteSettings() {
-    SiteSettingsState settings = siteSettingsRepository.get();
+    SiteSettingsState settings = siteSettingsStore.get();
 
     assertThat(settings.title()).isEqualTo("Dictum");
     assertThat(settings.subtitle()).isEqualTo("A remotely steerable markdown blog kit.");
@@ -40,7 +39,7 @@ class FilesystemSiteSettingsRepositoryTest {
             "A modular markdown blog platform.",
             "Filesystem-backed control plane wiring is live.");
 
-    SiteSettingsState saved = siteSettingsRepository.save(updated);
+    SiteSettingsState saved = siteSettingsStore.save(updated);
 
     assertThat(saved).isEqualTo(updated);
     assertThat(Files.readString(contentRoot.resolve("settings/site.json")))

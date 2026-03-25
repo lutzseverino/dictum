@@ -1,8 +1,8 @@
-package dev.dictum.api.site.repository;
+package dev.dictum.api.site.store;
 
 import dev.dictum.api.site.model.vo.SiteSettingsState;
 
-public interface SiteSettingsRepository {
+public interface SiteSettingsStore {
 
   SiteSettingsState get();
 

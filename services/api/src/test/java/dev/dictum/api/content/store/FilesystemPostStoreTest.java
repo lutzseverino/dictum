@@ -1,4 +1,4 @@
-package dev.dictum.api.content.repository;
+package dev.dictum.api.content.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,21 +16,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class FilesystemPostRepositoryTest {
+class FilesystemPostStoreTest {
 
   @TempDir private Path contentRoot;
 
-  private FilesystemPostRepository postRepository;
+  private FilesystemPostStore postStore;
 
   @BeforeEach
   void setUp() {
     FilesystemContentFixture.writeSeed(contentRoot);
-    postRepository = new FilesystemPostRepository(FilesystemContentRoot.from(contentRoot));
+    postStore = new FilesystemPostStore(FilesystemContentRoot.from(contentRoot));
   }
 
   @Test
   void findAllReadsMarkdownFrontmatterAndStylesheetContent() {
-    List<PostState> posts = postRepository.findAll();
+    List<PostState> posts = postStore.findAll();
 
     assertThat(posts).hasSize(2);
     assertThat(posts.get(0).slug()).isEqualTo("dictum-begins");
@@ -58,7 +58,7 @@ class FilesystemPostRepositoryTest {
             "posts/notes-on-remote-editing/style.css",
             "posts/notes-on-remote-editing/meta.json");
 
-    PostState saved = postRepository.save(created);
+    PostState saved = postStore.save(created);
 
     assertThat(saved.slug()).isEqualTo("notes-on-remote-editing");
     assertThat(saved.stylesheetContent()).isEqualTo("body { color: tomato; }");
@@ -78,7 +78,7 @@ class FilesystemPostRepositoryTest {
     Path metaPath = contentRoot.resolve("posts/dictum-begins/meta.json");
     Files.writeString(metaPath, "{\"motif\":\"accent-border\"}");
 
-    PostState existing = postRepository.findBySlug("dictum-begins").orElseThrow();
+    PostState existing = postStore.findBySlug("dictum-begins").orElseThrow();
     PostState updated =
         new PostState(
             existing.slug(),
@@ -95,7 +95,7 @@ class FilesystemPostRepositoryTest {
             existing.stylesheetPath(),
             existing.metaPath());
 
-    postRepository.save(updated);
+    postStore.save(updated);
 
     assertThat(Files.readString(metaPath)).isEqualTo("{\"motif\":\"accent-border\"}");
   }
@@ -119,7 +119,7 @@ class FilesystemPostRepositoryTest {
         Dictum starts life as a hybrid stack.
         """);
 
-    assertThatThrownBy(() -> postRepository.findBySlug("dictum-begins"))
+    assertThatThrownBy(() -> postStore.findBySlug("dictum-begins"))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Post frontmatter slug wrong-slug does not match directory slug dictum-begins");
   }

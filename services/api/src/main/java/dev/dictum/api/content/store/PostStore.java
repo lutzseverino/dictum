@@ -1,10 +1,10 @@
-package dev.dictum.api.content.repository;
+package dev.dictum.api.content.store;
 
 import dev.dictum.api.content.model.vo.PostState;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostRepository {
+public interface PostStore {
 
   List<PostState> findAll();
 

@@ -1,4 +1,4 @@
-package dev.dictum.api.site.repository;
+package dev.dictum.api.site.store;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.config.FilesystemContentRoot;
@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FilesystemSiteSettingsRepository implements SiteSettingsRepository {
+public class FilesystemSiteSettingsStore implements SiteSettingsStore {
 
   private static final String SETTINGS_DIRECTORY = "settings";
   private static final String SITE_SETTINGS_FILENAME = "site.json";
@@ -17,7 +17,7 @@ public class FilesystemSiteSettingsRepository implements SiteSettingsRepository 
   private final Path settingsFile;
   private final ObjectMapper objectMapper;
 
-  public FilesystemSiteSettingsRepository(FilesystemContentRoot contentRoot) {
+  public FilesystemSiteSettingsStore(FilesystemContentRoot contentRoot) {
     this.settingsFile = contentRoot.siteSettingsFile();
     this.objectMapper = new ObjectMapper().findAndRegisterModules();
   }
