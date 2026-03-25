@@ -13,10 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@ConditionalOnProperty(
-    name = "dictum.content.repository",
-    havingValue = "in-memory",
-    matchIfMissing = true)
+@ConditionalOnProperty(name = "dictum.content.repository", havingValue = "in-memory")
 public class InMemoryPostRepository implements PostRepository {
 
   private final Map<String, PostState> posts = new LinkedHashMap<>();
