@@ -20,8 +20,6 @@ export interface BlogPostDocument {
   frontmatter: PostFrontmatter;
   body: string;
   stylesheets: PostStylesheet[];
-  contentPath: string;
-  metaPath?: string;
 }
 
 export interface BlogPostSummary extends PostFrontmatter {

@@ -11,8 +11,6 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development server
-security:
-  - bearerAuth: []
 tags:
   - name: Posts
     description: Manage markdown-backed post resources.
@@ -58,8 +56,6 @@ paths:
                         - admin
                         - control-plane
                       hasStylesheet: false
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     post:
@@ -103,8 +99,6 @@ paths:
                 $ref: "#/components/schemas/PostResponse"
         "409":
           $ref: "#/components/responses/ProblemResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
   /api/v1/posts/{slug}:
@@ -140,13 +134,8 @@ paths:
                       Dictum starts life as a control plane with a deliberate split between content management and public presentation.
 
                       Blog frontends remain external consumers.
-                    contentPath: posts/dictum-begins/index.md
-                    stylesheetPath: posts/dictum-begins/style.css
-                    metaPath: posts/dictum-begins/meta.json
         "404":
           $ref: "#/components/responses/ProblemResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     patch:
@@ -182,8 +171,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PostResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         "404":
           $ref: "#/components/responses/ProblemResponse"
         "415":
@@ -208,8 +195,6 @@ paths:
                 $ref: "#/components/schemas/PostResponse"
         "404":
           $ref: "#/components/responses/ProblemResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         "409":
           $ref: "#/components/responses/ProblemResponse"
         default:
@@ -234,8 +219,6 @@ paths:
                     title: Dictum
                     subtitle: A remotely steerable markdown blog kit.
                     motd: "Foundation mode is live: boundaries first, resources next."
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     patch:
@@ -263,18 +246,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SiteSettingsResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedProblemResponse"
         "415":
           $ref: "#/components/responses/ProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   parameters:
     PostSlug:
       name: slug
@@ -299,20 +275,6 @@ components:
                 status: 404
                 detail: No post exists for slug remote-controls-later
                 instance: /api/v1/posts/remote-controls-later
-    UnauthorizedProblemResponse:
-      description: Authentication is required or the bearer token is invalid.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/ProblemDetails"
-          examples:
-            unauthorized:
-              value:
-                type: https://dictum.dev/problems/unauthorized
-                title: Authentication required
-                status: 401
-                detail: A valid bearer token is required to access this resource.
-                instance: /api/v1/posts
   schemas:
     PostStatus:
       type: string
@@ -372,7 +334,6 @@ components:
         - tags
         - hasStylesheet
         - body
-        - contentPath
       properties:
         slug:
           type: string
@@ -399,16 +360,6 @@ components:
           type: boolean
         body:
           type: string
-        contentPath:
-          type: string
-        stylesheetPath:
-          type:
-            - string
-            - "null"
-        metaPath:
-          type:
-            - string
-            - "null"
     CreatePostRequest:
       type: object
       additionalProperties: false

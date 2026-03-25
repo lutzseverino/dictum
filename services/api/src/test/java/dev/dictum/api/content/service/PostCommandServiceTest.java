@@ -39,7 +39,7 @@ class PostCommandServiceTest {
   }
 
   @Test
-  void createPersistsADraftPostWithDerivedPaths() {
+  void createPersistsADraftPost() {
     CreatePostCommand command =
         new CreatePostCommand(
             "Notes on Remote Editing",
@@ -55,10 +55,7 @@ class PostCommandServiceTest {
     assertThat(created.slug()).isEqualTo(NOTES_ON_REMOTE_EDITING_SLUG);
     assertThat(created.status()).isEqualTo(PostStatus.DRAFT);
     assertThat(created.hasStylesheet()).isTrue();
-    assertThat(created.contentPath())
-        .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/index.md");
-    assertThat(created.stylesheetPath())
-        .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/style.css");
+    assertThat(created.stylesheetContent()).isEqualTo("body { color: tomato; }");
     assertThat(postStore.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
   }
 
@@ -115,7 +112,7 @@ class PostCommandServiceTest {
         postCommandService.update(DICTUM_BEGINS_SLUG, patch("{\"stylesheet\":null}", null, null));
 
     assertThat(updated.hasStylesheet()).isFalse();
-    assertThat(updated.stylesheetPath()).isNull();
+    assertThat(updated.stylesheetContent()).isNull();
   }
 
   @Test
