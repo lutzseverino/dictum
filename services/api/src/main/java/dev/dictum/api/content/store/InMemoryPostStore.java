@@ -35,10 +35,7 @@ public class InMemoryPostStore implements PostStore {
               border-inline-start: 0.4rem solid #dd6b20;
               padding-inline-start: 1.25rem;
             }
-            """,
-            "posts/dictum-begins/index.md",
-            "posts/dictum-begins/style.css",
-            "posts/dictum-begins/meta.json");
+            """);
 
     PostState secondPost =
         new PostState(
@@ -55,9 +52,6 @@ public class InMemoryPostStore implements PostStore {
 
             The next slices will connect this draft to the generated control-plane client.
             """,
-            null,
-            "posts/remote-controls-later/index.md",
-            null,
             null);
 
     posts.put(firstPost.slug(), firstPost);

@@ -88,24 +88,6 @@ export interface PostResponse {
      * @memberof PostResponse
      */
     body: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PostResponse
-     */
-    contentPath: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PostResponse
-     */
-    stylesheetPath?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof PostResponse
-     */
-    metaPath?: string | null;
 }
 
 
@@ -122,7 +104,6 @@ export function instanceOfPostResponse(value: object): value is PostResponse {
     if (!('tags' in value) || value['tags'] === undefined) return false;
     if (!('hasStylesheet' in value) || value['hasStylesheet'] === undefined) return false;
     if (!('body' in value) || value['body'] === undefined) return false;
-    if (!('contentPath' in value) || value['contentPath'] === undefined) return false;
     return true;
 }
 
@@ -145,9 +126,6 @@ export function PostResponseFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'tags': json['tags'],
         'hasStylesheet': json['hasStylesheet'],
         'body': json['body'],
-        'contentPath': json['contentPath'],
-        'stylesheetPath': json['stylesheetPath'] == null ? undefined : json['stylesheetPath'],
-        'metaPath': json['metaPath'] == null ? undefined : json['metaPath'],
     };
 }
 
@@ -171,9 +149,6 @@ export function PostResponseToJSONTyped(value?: PostResponse | null, ignoreDiscr
         'tags': value['tags'],
         'hasStylesheet': value['hasStylesheet'],
         'body': value['body'],
-        'contentPath': value['contentPath'],
-        'stylesheetPath': value['stylesheetPath'],
-        'metaPath': value['metaPath'],
     };
 }
 

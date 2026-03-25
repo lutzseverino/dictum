@@ -65,7 +65,6 @@ class HttpContractTest {
 
     PostResponse post = objectMapper.readValue(response.body(), PostResponse.class);
     assertThat(post.getSlug()).isEqualTo(DICTUM_BEGINS_SLUG);
-    assertThat(post.getContentPath()).isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/index.md");
     assertThat(post.getHasStylesheet()).isTrue();
     assertThat(post.getBody()).contains("hybrid stack");
   }

@@ -66,12 +66,6 @@ Version public HTTP endpoints in the path.
 
 - Dictum uses `/api/v1/...` for the initial contract.
 
-### Auth in the Contract
-
-The OpenAPI contract may declare bearer authentication before runtime auth is implemented.
-
-This allows the contract to express the intended boundary without forcing the implementation slice to solve auth immediately.
-
 ## Consequences
 
 - The API is easier for contributors to understand without project-specific onboarding.

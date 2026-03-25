@@ -36,8 +36,8 @@ class PostQueryServiceTest {
     PostState response = postQueryService.get(DICTUM_BEGINS_SLUG);
 
     assertThat(response.slug()).isEqualTo(DICTUM_BEGINS_SLUG);
-    assertThat(response.contentPath()).isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/index.md");
-    assertThat(response.stylesheetPath()).isEqualTo("posts/" + DICTUM_BEGINS_SLUG + "/style.css");
+    assertThat(response.hasStylesheet()).isTrue();
+    assertThat(response.stylesheetContent()).contains("border-inline-start");
   }
 
   @Test
