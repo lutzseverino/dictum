@@ -99,8 +99,7 @@ class PostCommandServiceTest {
         patch(
             "{\"title\":\"Remote Controls, Sooner\",\"tags\":[\"admin\",\"api\"]}",
             "Remote Controls, Sooner",
-            List.of(ADMIN_TAG, "api"),
-            null);
+            List.of(ADMIN_TAG, "api"));
 
     PostState updated = postCommandService.update(REMOTE_CONTROLS_LATER_SLUG, patch);
 
@@ -113,8 +112,7 @@ class PostCommandServiceTest {
   @Test
   void updateRemovesTheStylesheetWhenTheFieldIsPatchedToNull() {
     PostState updated =
-        postCommandService.update(
-            DICTUM_BEGINS_SLUG, patch("{\"stylesheet\":null}", null, null, null));
+        postCommandService.update(DICTUM_BEGINS_SLUG, patch("{\"stylesheet\":null}", null, null));
 
     assertThat(updated.hasStylesheet()).isFalse();
     assertThat(updated.stylesheetPath()).isNull();
@@ -125,7 +123,7 @@ class PostCommandServiceTest {
     assertThatThrownBy(
             () ->
                 postCommandService.update(
-                    REMOTE_CONTROLS_LATER_SLUG, patch("{\"tags\":null}", null, null, null)))
+                    REMOTE_CONTROLS_LATER_SLUG, patch("{\"tags\":null}", null, null)))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field tags cannot be null");
   }
@@ -150,17 +148,14 @@ class PostCommandServiceTest {
     assertThatThrownBy(
             () ->
                 postCommandService.update(
-                    "unknown-slug", patch("{\"title\":\"Nope\"}", "Nope", null, null)))
+                    "unknown-slug", patch("{\"title\":\"Nope\"}", "Nope", null)))
         .isInstanceOf(PostNotFoundException.class)
         .hasMessage("No post exists for slug unknown-slug");
   }
 
-  private PostPatch patch(String json, String title, List<String> tags, String stylesheet) {
+  private PostPatch patch(String json, String title, List<String> tags) {
     dev.dictum.api.generated.model.UpdatePostRequest request =
-        new dev.dictum.api.generated.model.UpdatePostRequest()
-            .title(title)
-            .tags(tags)
-            .stylesheet(stylesheet);
+        new dev.dictum.api.generated.model.UpdatePostRequest().title(title).tags(tags);
     MergePatchDocument document = patchDocument(json);
 
     return new PostPatch(
