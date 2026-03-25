@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import dev.dictum.api.config.DictumContentProperties;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
@@ -19,7 +20,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -38,8 +38,8 @@ public class FilesystemPostRepository implements PostRepository {
   private final YAMLMapper yamlMapper;
   private final ObjectMapper jsonMapper;
 
-  public FilesystemPostRepository(@Value("${dictum.content.root}") String configuredRoot) {
-    this.contentRoot = validateRoot(configuredRoot);
+  public FilesystemPostRepository(DictumContentProperties contentProperties) {
+    this.contentRoot = contentProperties.requireRoot();
     this.postsRoot = contentRoot.resolve(POSTS_DIRECTORY);
     this.yamlMapper =
         new YAMLMapper(
@@ -47,7 +47,7 @@ public class FilesystemPostRepository implements PostRepository {
     yamlMapper.findAndRegisterModules();
     yamlMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     this.jsonMapper = new ObjectMapper().findAndRegisterModules();
-    createPostsRoot();
+    validatePostsRoot();
   }
 
   @Override
@@ -94,11 +94,9 @@ public class FilesystemPostRepository implements PostRepository {
     }
   }
 
-  private void createPostsRoot() {
-    try {
-      Files.createDirectories(postsRoot);
-    } catch (IOException exception) {
-      throw new UncheckedIOException("Failed to initialize posts directory", exception);
+  private void validatePostsRoot() {
+    if (!Files.isDirectory(postsRoot)) {
+      throw new IllegalStateException("Content repository is missing posts/");
     }
   }
 
@@ -201,15 +199,6 @@ public class FilesystemPostRepository implements PostRepository {
 
   private String relativePath(Path file) {
     return contentRoot.relativize(file).toString().replace('\\', '/');
-  }
-
-  private static Path validateRoot(String configuredRoot) {
-    if (configuredRoot == null || configuredRoot.isBlank()) {
-      throw new IllegalStateException(
-          "Property dictum.content.root must be configured when using the filesystem repository");
-    }
-
-    return Path.of(configuredRoot);
   }
 
   private void validateDirectorySlug(String directorySlug, String frontmatterSlug) {

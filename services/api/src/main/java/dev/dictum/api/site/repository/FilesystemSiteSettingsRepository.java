@@ -1,13 +1,13 @@
 package dev.dictum.api.site.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.dictum.api.config.DictumContentProperties;
 import dev.dictum.api.site.model.vo.SiteSettingsState;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -21,8 +21,8 @@ public class FilesystemSiteSettingsRepository implements SiteSettingsRepository 
   private final Path settingsFile;
   private final ObjectMapper objectMapper;
 
-  public FilesystemSiteSettingsRepository(@Value("${dictum.content.root}") String configuredRoot) {
-    Path contentRoot = validateRoot(configuredRoot);
+  public FilesystemSiteSettingsRepository(DictumContentProperties contentProperties) {
+    Path contentRoot = contentProperties.requireRoot();
     this.settingsFile = contentRoot.resolve(SETTINGS_DIRECTORY).resolve(SITE_SETTINGS_FILENAME);
     this.objectMapper = new ObjectMapper().findAndRegisterModules();
     ensureSettingsFileExists();
@@ -51,25 +51,8 @@ public class FilesystemSiteSettingsRepository implements SiteSettingsRepository 
   }
 
   private void ensureSettingsFileExists() {
-    Path settingsDirectory = settingsFile.getParent();
-
-    try {
-      Files.createDirectories(settingsDirectory);
-    } catch (IOException exception) {
-      throw new UncheckedIOException("Failed to initialize settings directory", exception);
-    }
-
     if (!Files.exists(settingsFile)) {
       throw new IllegalStateException("Content repository is missing settings/site.json");
     }
-  }
-
-  private static Path validateRoot(String configuredRoot) {
-    if (configuredRoot == null || configuredRoot.isBlank()) {
-      throw new IllegalStateException(
-          "Property dictum.content.root must be configured when using the filesystem repository");
-    }
-
-    return Path.of(configuredRoot);
   }
 }
