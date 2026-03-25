@@ -1,6 +1,8 @@
 package dev.dictum.api.content.command;
 
 import dev.dictum.api.generated.model.PostTemplate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -14,6 +16,6 @@ public record CreatePostCommand(
     @Nullable String stylesheet) {
 
   public CreatePostCommand {
-    tags = tags == null ? null : List.copyOf(tags);
+    tags = tags == null ? null : Collections.unmodifiableList(new ArrayList<>(tags));
   }
 }
