@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.content.command.CreatePostCommand;
+import dev.dictum.api.content.error.InvalidPostRequestException;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.model.vo.PostPatch;
@@ -15,6 +16,7 @@ import dev.dictum.api.generated.model.PostTemplate;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +77,20 @@ class PostCommandServiceTest {
     assertThatThrownBy(() -> postCommandService.create(command))
         .isInstanceOf(PostConflictException.class)
         .hasMessage("A post already exists for slug " + DICTUM_BEGINS_SLUG);
+  }
+
+  @Test
+  void createRejectsTagListsContainingNullEntries() {
+    List<String> tags = new ArrayList<>(List.of("news"));
+    tags.add(null);
+
+    CreatePostCommand command =
+        new CreatePostCommand(
+            "Bad tags", "bad-tags", "Contains a null tag.", PostTemplate.NOTE, tags, "Body.", null);
+
+    assertThatThrownBy(() -> postCommandService.create(command))
+        .isInstanceOf(InvalidPostRequestException.class)
+        .hasMessage("Field tags cannot contain blank values");
   }
 
   @Test
