@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 class MergePatchDocumentTest {
@@ -13,7 +12,7 @@ class MergePatchDocumentTest {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Test
-  void fieldExtractionPreservesPresenceExplicitNullAndValue() throws IOException {
+  void fieldExtractionPreservesPresenceExplicitNullAndValue() throws Exception {
     MergePatchDocument document =
         new MergePatchDocument(
             OBJECT_MAPPER.readTree("{\"title\":\"Updated\",\"stylesheet\":null}"));
@@ -30,7 +29,7 @@ class MergePatchDocumentTest {
   }
 
   @Test
-  void constructorRejectsEmptyObjects() throws IOException {
+  void constructorRejectsEmptyObjects() throws Exception {
     assertThatThrownBy(() -> new MergePatchDocument(OBJECT_MAPPER.readTree("{}")))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("PATCH requests must include at least one field");
