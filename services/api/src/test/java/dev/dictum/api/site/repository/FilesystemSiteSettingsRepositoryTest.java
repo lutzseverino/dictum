@@ -2,7 +2,7 @@ package dev.dictum.api.site.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import dev.dictum.api.config.DictumContentProperties;
+import dev.dictum.api.config.FilesystemContentRoot;
 import dev.dictum.api.site.model.vo.SiteSettingsState;
 import dev.dictum.api.support.FilesystemContentFixture;
 import java.nio.file.Files;
@@ -20,13 +20,8 @@ class FilesystemSiteSettingsRepositoryTest {
   @BeforeEach
   void setUp() {
     FilesystemContentFixture.writeSeed(contentRoot);
-    siteSettingsRepository = new FilesystemSiteSettingsRepository(contentProperties());
-  }
-
-  private DictumContentProperties contentProperties() {
-    DictumContentProperties contentProperties = new DictumContentProperties();
-    contentProperties.setRoot(contentRoot);
-    return contentProperties;
+    siteSettingsRepository =
+        new FilesystemSiteSettingsRepository(FilesystemContentRoot.from(contentRoot));
   }
 
   @Test

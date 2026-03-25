@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import dev.dictum.api.config.DictumContentProperties;
+import dev.dictum.api.config.FilesystemContentRoot;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
@@ -20,11 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
 
-@Repository
-@ConditionalOnProperty(name = "dictum.content.repository", havingValue = "filesystem")
 public class FilesystemPostRepository implements PostRepository {
 
   private static final String POSTS_DIRECTORY = "posts";
@@ -38,16 +34,15 @@ public class FilesystemPostRepository implements PostRepository {
   private final YAMLMapper yamlMapper;
   private final ObjectMapper jsonMapper;
 
-  public FilesystemPostRepository(DictumContentProperties contentProperties) {
-    this.contentRoot = contentProperties.requireRoot();
-    this.postsRoot = contentRoot.resolve(POSTS_DIRECTORY);
+  public FilesystemPostRepository(FilesystemContentRoot contentRoot) {
+    this.contentRoot = contentRoot.root();
+    this.postsRoot = contentRoot.postsRoot();
     this.yamlMapper =
         new YAMLMapper(
             YAMLFactory.builder().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER).build());
     yamlMapper.findAndRegisterModules();
     yamlMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     this.jsonMapper = new ObjectMapper().findAndRegisterModules();
-    validatePostsRoot();
   }
 
   @Override
@@ -91,12 +86,6 @@ public class FilesystemPostRepository implements PostRepository {
     } catch (IOException exception) {
       throw new UncheckedIOException(
           "Failed to write post " + state.slug() + " to content repository", exception);
-    }
-  }
-
-  private void validatePostsRoot() {
-    if (!Files.isDirectory(postsRoot)) {
-      throw new IllegalStateException("Content repository is missing posts/");
     }
   }
 

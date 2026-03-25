@@ -22,7 +22,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"dictum.content.repository=filesystem"})
 class FilesystemHttpContractTest {
 
   private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();

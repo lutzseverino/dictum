@@ -63,7 +63,7 @@ dictum/
 
 ## Content Model
 
-- The content source of truth lives in a separate `dictum-content` repository.
+- The content source of truth lives in an external content repository.
 - Posts remain markdown-first.
 - Per-post styling is represented as optional plain CSS sidecars, not embedded Tailwind utilities in markdown.
 - The API reads and writes that repository through `dictum.content.root` / `DICTUM_CONTENT_ROOT`.

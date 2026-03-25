@@ -3,7 +3,7 @@ package dev.dictum.api.content.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.dictum.api.config.DictumContentProperties;
+import dev.dictum.api.config.FilesystemContentRoot;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.generated.model.PostStatus;
 import dev.dictum.api.generated.model.PostTemplate;
@@ -25,13 +25,7 @@ class FilesystemPostRepositoryTest {
   @BeforeEach
   void setUp() {
     FilesystemContentFixture.writeSeed(contentRoot);
-    postRepository = new FilesystemPostRepository(contentProperties());
-  }
-
-  private DictumContentProperties contentProperties() {
-    DictumContentProperties contentProperties = new DictumContentProperties();
-    contentProperties.setRoot(contentRoot);
-    return contentProperties;
+    postRepository = new FilesystemPostRepository(FilesystemContentRoot.from(contentRoot));
   }
 
   @Test
