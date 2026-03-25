@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapperImpl;
-import dev.dictum.api.content.repository.InMemoryPostRepository;
+import dev.dictum.api.content.store.InMemoryPostStore;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
 import java.util.List;
@@ -20,7 +20,7 @@ class PostQueryServiceTest {
 
   @BeforeEach
   void setUp() {
-    postQueryService = new PostQueryService(new InMemoryPostRepository(), new PostApiMapperImpl());
+    postQueryService = new PostQueryService(new InMemoryPostStore(), new PostApiMapperImpl());
   }
 
   @Test

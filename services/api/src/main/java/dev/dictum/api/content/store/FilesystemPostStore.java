@@ -1,4 +1,4 @@
-package dev.dictum.api.content.repository;
+package dev.dictum.api.content.store;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class FilesystemPostRepository implements PostRepository {
+public class FilesystemPostStore implements PostStore {
 
   private static final String CONTENT_FILENAME = "index.md";
   private static final String STYLESHEET_FILENAME = "style.css";
@@ -33,7 +33,7 @@ public class FilesystemPostRepository implements PostRepository {
   private final YAMLMapper yamlMapper;
   private final ObjectMapper jsonMapper;
 
-  public FilesystemPostRepository(FilesystemContentRoot contentRoot) {
+  public FilesystemPostStore(FilesystemContentRoot contentRoot) {
     this.contentRoot = contentRoot.root();
     this.postsRoot = contentRoot.postsRoot();
     this.yamlMapper =

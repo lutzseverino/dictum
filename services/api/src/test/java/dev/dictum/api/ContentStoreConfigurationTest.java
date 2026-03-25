@@ -2,10 +2,10 @@ package dev.dictum.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import dev.dictum.api.content.repository.FilesystemPostRepository;
-import dev.dictum.api.content.repository.InMemoryPostRepository;
-import dev.dictum.api.site.repository.FilesystemSiteSettingsRepository;
-import dev.dictum.api.site.repository.InMemorySiteSettingsRepository;
+import dev.dictum.api.content.store.FilesystemPostStore;
+import dev.dictum.api.content.store.InMemoryPostStore;
+import dev.dictum.api.site.store.FilesystemSiteSettingsStore;
+import dev.dictum.api.site.store.InMemorySiteSettingsStore;
 import dev.dictum.api.support.FilesystemContentFixture;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
-class ContentRepositoryConfigurationTest {
+class ContentStoreConfigurationTest {
 
   private final WebApplicationContextRunner contextRunner =
       new WebApplicationContextRunner().withUserConfiguration(DictumApiApplication.class);
@@ -40,10 +40,10 @@ class ContentRepositoryConfigurationTest {
         .run(
             context -> {
               assertThat(context).hasNotFailed();
-              assertThat(context).hasSingleBean(InMemoryPostRepository.class);
-              assertThat(context).hasSingleBean(InMemorySiteSettingsRepository.class);
-              assertThat(context).doesNotHaveBean(FilesystemPostRepository.class);
-              assertThat(context).doesNotHaveBean(FilesystemSiteSettingsRepository.class);
+              assertThat(context).hasSingleBean(InMemoryPostStore.class);
+              assertThat(context).hasSingleBean(InMemorySiteSettingsStore.class);
+              assertThat(context).doesNotHaveBean(FilesystemPostStore.class);
+              assertThat(context).doesNotHaveBean(FilesystemSiteSettingsStore.class);
             });
   }
 
@@ -58,10 +58,10 @@ class ContentRepositoryConfigurationTest {
         .run(
             context -> {
               assertThat(context).hasNotFailed();
-              assertThat(context).hasSingleBean(FilesystemPostRepository.class);
-              assertThat(context).hasSingleBean(FilesystemSiteSettingsRepository.class);
-              assertThat(context).doesNotHaveBean(InMemoryPostRepository.class);
-              assertThat(context).doesNotHaveBean(InMemorySiteSettingsRepository.class);
+              assertThat(context).hasSingleBean(FilesystemPostStore.class);
+              assertThat(context).hasSingleBean(FilesystemSiteSettingsStore.class);
+              assertThat(context).doesNotHaveBean(InMemoryPostStore.class);
+              assertThat(context).doesNotHaveBean(InMemorySiteSettingsStore.class);
             });
   }
 

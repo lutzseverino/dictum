@@ -7,8 +7,8 @@ import dev.dictum.api.content.model.vo.PostPatch;
 import dev.dictum.api.content.model.vo.PostSlug;
 import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.model.vo.PostTags;
-import dev.dictum.api.content.repository.PostRepository;
 import dev.dictum.api.content.rule.PostPatchValidator;
+import dev.dictum.api.content.store.PostStore;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
@@ -26,17 +26,17 @@ public class PostCommandService {
   private static final String STYLESHEET_FILENAME = "style.css";
   private static final String META_FILENAME = "meta.json";
 
-  private final PostRepository postRepository;
+  private final PostStore postStore;
   private final PostApiMapper postApiMapper;
   private final PostPatchValidator postPatchValidator;
   private final MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
   PostCommandService(
-      PostRepository postRepository,
+      PostStore postStore,
       PostApiMapper postApiMapper,
       PostPatchValidator postPatchValidator,
       MergePatchDocumentAccessor mergePatchDocumentAccessor) {
-    this.postRepository = postRepository;
+    this.postStore = postStore;
     this.postApiMapper = postApiMapper;
     this.postPatchValidator = postPatchValidator;
     this.mergePatchDocumentAccessor = mergePatchDocumentAccessor;
@@ -45,7 +45,7 @@ public class PostCommandService {
   public PostResponse create(CreatePostRequest request) {
     String slug = new PostSlug(request.getSlug()).value();
 
-    if (postRepository.exists(slug)) {
+    if (postStore.exists(slug)) {
       throw new PostConflictException("A post already exists for slug " + slug);
     }
 
@@ -65,7 +65,7 @@ public class PostCommandService {
             request.getStylesheet() != null ? stylesheetPathFor(slug) : null,
             metaPathFor(slug));
 
-    return postApiMapper.toResponse(postRepository.save(created));
+    return postApiMapper.toResponse(postStore.save(created));
   }
 
   public PostResponse update(String slug, UpdatePostRequest request) {
@@ -73,7 +73,7 @@ public class PostCommandService {
     PostPatch patch = readPatch(request);
     postPatchValidator.validate(patch);
 
-    return postApiMapper.toResponse(postRepository.save(updatedState(slug, current, patch)));
+    return postApiMapper.toResponse(postStore.save(updatedState(slug, current, patch)));
   }
 
   public PostResponse publish(String slug) {
@@ -99,13 +99,13 @@ public class PostCommandService {
             current.stylesheetPath(),
             current.metaPath());
 
-    return postApiMapper.toResponse(postRepository.save(published));
+    return postApiMapper.toResponse(postStore.save(published));
   }
 
   private PostState requireState(String slug) {
     String validatedSlug = new PostSlug(slug).value();
 
-    return postRepository
+    return postStore
         .findBySlug(validatedSlug)
         .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
   }

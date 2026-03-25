@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.mapper.PostApiMapperImpl;
-import dev.dictum.api.content.repository.InMemoryPostRepository;
 import dev.dictum.api.content.rule.PostPatchRequiredValuesRule;
 import dev.dictum.api.content.rule.PostPatchValidator;
+import dev.dictum.api.content.store.InMemoryPostStore;
 import dev.dictum.api.generated.model.CreatePostRequest;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostStatus;
@@ -38,15 +38,15 @@ class PostCommandServiceTest {
 
   @Mock private MergePatchDocumentAccessor mergePatchDocumentAccessor;
 
-  private InMemoryPostRepository postRepository;
+  private InMemoryPostStore postStore;
   private PostCommandService postCommandService;
 
   @BeforeEach
   void setUp() {
-    postRepository = new InMemoryPostRepository();
+    postStore = new InMemoryPostStore();
     postCommandService =
         new PostCommandService(
-            postRepository,
+            postStore,
             new PostApiMapperImpl(),
             new PostPatchValidator(List.of(new PostPatchRequiredValuesRule())),
             mergePatchDocumentAccessor);
@@ -73,7 +73,7 @@ class PostCommandServiceTest {
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/index.md");
     assertThat(response.getStylesheetPath())
         .isEqualTo("posts/" + NOTES_ON_REMOTE_EDITING_SLUG + "/style.css");
-    assertThat(postRepository.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
+    assertThat(postStore.findBySlug(NOTES_ON_REMOTE_EDITING_SLUG)).isPresent();
   }
 
   @Test
