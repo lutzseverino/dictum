@@ -1,4 +1,4 @@
-package dev.dictum.api.content.model.command;
+package dev.dictum.api.content.command;
 
 import dev.dictum.api.generated.model.PostTemplate;
 import java.util.List;
