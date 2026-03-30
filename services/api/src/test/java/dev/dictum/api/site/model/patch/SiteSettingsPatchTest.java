@@ -1,4 +1,4 @@
-package dev.dictum.api.site.model.vo;
+package dev.dictum.api.site.model.patch;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

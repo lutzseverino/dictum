@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.dictum.api.config.FilesystemContentRoot;
-import dev.dictum.api.content.model.vo.PostState;
-import dev.dictum.api.generated.model.PostStatus;
-import dev.dictum.api.generated.model.PostTemplate;
+import dev.dictum.api.content.model.state.PostState;
+import dev.dictum.api.content.model.vo.PostStatus;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import dev.dictum.api.support.FilesystemContentFixture;
 import java.nio.file.Files;
 import java.nio.file.Path;
