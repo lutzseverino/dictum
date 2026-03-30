@@ -3,10 +3,10 @@ title: Backend Layering and Service Boundaries
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-12
+updated: 2026-03-30
 owner: Engineering
 doc-type: explanation
-summary: Explain how Dictum structures controllers, services, entities, projections, and DTOs in the backend.
+summary: Explain how Dictum structures controllers, services, stores, internal models, and DTOs in the backend.
 ---
 
 # Backend Layering and Service Boundaries
@@ -38,11 +38,17 @@ Within a domain, Dictum may use these standard subpackages as needed:
 - `mapper`
 - `model.payload`
 - `model.vo`
+- `model.state`
+- `model.patch`
 - `model.projection`
 - `model.entity`
-- `repository`
+- `store`
 
 Not every subpackage needs to exist immediately. Empty layers should not be created just to satisfy the template. At the current stage, generated OpenAPI models act as the external payload layer, so some domains will not yet contain handwritten `model.payload` types.
+
+- `model.vo` holds true domain values with independent meaning, such as slugs, tags, and internal enums.
+- `model.state` holds internal resource state records exchanged between services, stores, and mappers.
+- `model.patch` holds domain-local partial mutation models applied inside command flows.
 
 ### Controllers
 
@@ -59,7 +65,7 @@ The goal is for a reader to understand an endpoint quickly by opening the contro
 Services act as the gate for each endpoint.
 
 - Services own the endpoint flow, sequencing, and internal structure.
-- Services are responsible for validation order, repository interaction, and response assembly.
+- Services are responsible for validation order, store interaction, and internal state assembly.
 - Public service methods should stay small and navigable, with private helpers used for internal steps when needed.
 - Domain-local mutation rules belong in a `rule` package when they outgrow simple inline checks and should not be left as service-local helper accretion.
 
@@ -88,17 +94,16 @@ Action-specific collaborators should be extracted only when complexity earns the
 
 Query services serve read endpoints.
 
-- Use `getResponse(...)` for singular reads.
-- Use `listResponses(...)` for collection reads.
-- Query services return response DTOs, not entities.
+- Use lean read verbs such as `get(...)` and `list()`.
+- Query services return domain-local state or read models, not response DTOs.
 - Query services should prefer projections or dedicated read models when reading from persistence.
 - Query services should be resource-scoped rather than action-scoped.
 
 Examples:
 
-- `PostQueryService#getResponse(String slug)`
-- `PostQueryService#listResponses()`
-- `SiteSettingsQueryService#getResponse()`
+- `PostQueryService#get(String slug)`
+- `PostQueryService#list()`
+- `SiteSettingsQueryService#get()`
 
 ### Command Services
 
@@ -106,17 +111,19 @@ Command services serve mutation endpoints.
 
 - Use the leanest unambiguous verb for mutations such as `create(...)`, `update(...)`, `publish(...)`, or `enqueueProviderJob(...)`.
 - Command services may load and mutate entities internally.
-- Command services still return response DTOs at their public boundary.
+- Command services return domain-local state at their public boundary.
 - Command services should be resource-scoped rather than split into one top-level class per action unless the command surface later becomes materially mixed.
 
-### Entities, Projections, and DTOs
+### State, Entities, Projections, and DTOs
+
+Internal state records are allowed to cross service, store, and mapper boundaries, but they must not leak into the HTTP contract.
 
 Entities are persistence-internal and must not cross outward into controller contracts.
 
 - Controllers must never expose entities.
 - Public service methods must never return entities.
-- Read paths should favor `projection -> DTO` or `read model -> DTO`.
-- Write paths may use `request DTO -> entity mutation -> response DTO`.
+- Read paths should favor `projection -> state -> DTO` or `read model -> DTO`.
+- Write paths may use `request DTO -> command/state -> store -> state -> response DTO`.
 
 This keeps HTTP contracts stable even when persistence models evolve.
 
@@ -125,11 +132,11 @@ This keeps HTTP contracts stable even when persistence models evolve.
 MapStruct is the preferred mapping mechanism for backend DTO assembly.
 
 - Place MapStruct mappers in a domain-local `mapper` package such as `content.mapper` or `site.mapper`.
-- Use MapStruct to map projections to response DTOs.
-- Use MapStruct to map entities to response DTOs when a write flow needs a response payload.
+- Use MapStruct to map internal state or read models to response DTOs.
+- Use MapStruct to translate between internal and external enum/value shapes when the API contract should not leak inward.
 - Avoid ad hoc controller-level mapping.
 
-The mapping layer is allowed to know about entities and projections, but controllers and external contracts are not.
+The mapping layer is allowed to know about internal state, entities, and projections, but controllers and external contracts are not.
 
 ### Readability Conventions
 
@@ -146,6 +153,6 @@ Dictum does not standardize region comments in backend classes.
 - Domain ownership stays clear even as new resources are added.
 - Persistence models can evolve without directly breaking API contracts.
 - Read paths gain a natural home for projections and read models.
-- Naming stays consistent across services through `getResponse(...)` and `listResponses(...)`.
+- Naming stays consistent across services through lean verbs such as `get(...)` and `list()`.
 - Resource ownership stays clear without exploding the number of top-level service classes.
 - Some contributors may find the boundary stricter than a typical Spring CRUD stack, but the tradeoff is deliberate.

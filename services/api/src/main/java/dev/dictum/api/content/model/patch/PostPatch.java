@@ -1,12 +1,15 @@
-package dev.dictum.api.content.model.vo;
+package dev.dictum.api.content.model.patch;
 
+import dev.dictum.api.content.model.state.PostState;
+import dev.dictum.api.content.model.vo.PostTags;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import dev.dictum.api.web.patch.PatchValue;
 import java.util.List;
 
 public record PostPatch(
     PatchValue<String> title,
     PatchValue<String> excerpt,
-    PatchValue<dev.dictum.api.generated.model.PostTemplate> template,
+    PatchValue<PostTemplate> template,
     PatchValue<List<String>> tags,
     PatchValue<String> body,
     PatchValue<String> stylesheet,

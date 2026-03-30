@@ -2,7 +2,7 @@ package dev.dictum.api.site.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import dev.dictum.api.site.store.InMemorySiteSettingsStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

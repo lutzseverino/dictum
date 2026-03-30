@@ -1,8 +1,8 @@
 package dev.dictum.api.content.service;
 
 import dev.dictum.api.content.error.PostNotFoundException;
+import dev.dictum.api.content.model.state.PostState;
 import dev.dictum.api.content.model.vo.PostSlug;
-import dev.dictum.api.content.model.vo.PostState;
 import dev.dictum.api.content.store.PostStore;
 import java.util.List;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package dev.dictum.api.content.model.vo;
+package dev.dictum.api.content.model.state;
 
-import dev.dictum.api.generated.model.PostStatus;
-import dev.dictum.api.generated.model.PostTemplate;
+import dev.dictum.api.content.model.vo.PostStatus;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import java.time.LocalDate;
 import java.util.List;
 
