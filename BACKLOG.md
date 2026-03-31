@@ -14,60 +14,38 @@ This file is for backlog and sequencing. Durable product, architecture, and refe
 
 ## Deferred
 
-### TypeScript Architecture
-
-Status: deferred until the backend-focused cleanup track is complete
-
-Why it is deferred:
-
-- the TypeScript side is not yet settled enough for a narrow cleanup pass to stay pure
-- touching it now would likely produce partial fixes instead of a coherent package model
-- the backend now provides a clearer pattern to apply later: contract at the edge, internally owned models, and names that match responsibility
-
-What should be revisited later:
-
-- define standard TypeScript package roles
-- clarify what belongs in shared contract packages versus app-local modules
-- separate pure contract types from convenience helpers or runtime behavior
-- document the TypeScript package model once it is chosen
-
 ### `packages/content-contract`
 
-Current question:
+Status: resolved on the active cleanup branch
 
-- should this package contain only shared contract types and repository-shape constants
-- or should it also contain convenience helpers and in-memory service utilities
+Decision:
+
+- `packages/content-contract` contains shared content types and repository-shape constants only
+- consumer helpers and runtime behavior do not belong in this package
 
 Types that fit the current package well:
 
 - `PostFrontmatter`
 - `BlogPostDocument`
-- `BlogPostSummary`
 - `SiteSettings`
 - `ContentRepositoryContract`
 - `dictumContentContract`
 
-Helpers that should be reconsidered later:
+Moved out of the package model:
 
+- `BlogPostSummary`
+- `BlogContentService`
 - `estimateReadingMinutes`
 - `summarizePost`
 - `createInMemoryContentService`
 
-Likely future options:
-
-- keep the package and split helpers into separate modules inside it
-- keep `content-contract` pure and move helpers into another neighboring package
-- move in-memory consumer helpers into app-local code if they are not truly shared
-
 ### TypeScript Documentation
 
-When the TypeScript package model is ready, add a dedicated architecture document that covers:
+Status: resolved on the active cleanup branch
 
-- standard package categories
-- dependency direction between packages
-- what counts as contract code
-- what counts as app code
-- where helper behavior should live
+See:
+
+- `docs/explanation/typescript-package-boundaries.md`
 
 ## Next Backend Items
 
