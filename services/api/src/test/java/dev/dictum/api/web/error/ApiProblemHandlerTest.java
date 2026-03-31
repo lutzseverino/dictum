@@ -3,9 +3,11 @@ package dev.dictum.api.web.error;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.dictum.api.content.error.InvalidPostRequestException;
-import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostAlreadyExistsException;
+import dev.dictum.api.content.error.PostAlreadyPublishedException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.generated.model.ProblemDetails;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpInputMessage;
@@ -32,23 +34,53 @@ class ApiProblemHandlerTest {
   @Test
   void handlePostNotFoundReturnsNotFoundProblemDetails() {
     var response =
-        apiProblemHandler.handlePostNotFound(
-            new PostNotFoundException("No post exists for slug unknown-slug"), request);
+        apiProblemHandler.handlePostNotFound(new PostNotFoundException("unknown-slug"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     assertThat(response.getHeaders().getContentType())
         .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
-    assertProblem(response.getBody(), "Resource not found", 404, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/post-not-found",
+        "Resource not found",
+        "post.not_found",
+        Map.of("slug", "unknown-slug"),
+        404,
+        POST_PATH);
   }
 
   @Test
-  void handlePostConflictReturnsConflictProblemDetails() {
+  void handlePostAlreadyExistsReturnsConflictProblemDetails() {
     var response =
-        apiProblemHandler.handlePostConflict(
-            new PostConflictException("Post dictum-begins is already published"), request);
+        apiProblemHandler.handlePostAlreadyExists(
+            new PostAlreadyExistsException("dictum-begins"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-    assertProblem(response.getBody(), "Conflict", 409, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/post-already-exists",
+        "Conflict",
+        "post.already_exists",
+        Map.of("slug", "dictum-begins"),
+        409,
+        POST_PATH);
+  }
+
+  @Test
+  void handlePostAlreadyPublishedReturnsConflictProblemDetails() {
+    var response =
+        apiProblemHandler.handlePostAlreadyPublished(
+            new PostAlreadyPublishedException("dictum-begins"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/post-already-published",
+        "Conflict",
+        "post.already_published",
+        Map.of("slug", "dictum-begins"),
+        409,
+        POST_PATH);
   }
 
   @Test
@@ -58,7 +90,14 @@ class ApiProblemHandlerTest {
             new InvalidPatchRequestException("Field subtitle cannot be null"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/invalid-patch-request",
+        BAD_REQUEST_TITLE,
+        "patch.invalid",
+        Map.of(),
+        400,
+        POST_PATH);
   }
 
   @Test
@@ -68,7 +107,14 @@ class ApiProblemHandlerTest {
             new InvalidPostRequestException("Tags must not contain null values"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/invalid-post-request",
+        BAD_REQUEST_TITLE,
+        "post.invalid",
+        Map.of(),
+        400,
+        POST_PATH);
   }
 
   @Test
@@ -78,7 +124,14 @@ class ApiProblemHandlerTest {
             new HttpMediaTypeNotSupportedException("application/json"), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    assertProblem(response.getBody(), "Unsupported media type", 415, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/unsupported-media-type",
+        "Unsupported media type",
+        "request.unsupported_media_type",
+        Map.of(),
+        415,
+        POST_PATH);
   }
 
   @Test
@@ -89,13 +142,29 @@ class ApiProblemHandlerTest {
             request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertProblem(response.getBody(), BAD_REQUEST_TITLE, 400, POST_PATH);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/bad-request",
+        BAD_REQUEST_TITLE,
+        "request.invalid",
+        Map.of(),
+        400,
+        POST_PATH);
   }
 
   private void assertProblem(
-      ProblemDetails problemDetails, String title, int status, String instance) {
+      ProblemDetails problemDetails,
+      String type,
+      String title,
+      String code,
+      Map<String, Object> params,
+      int status,
+      String instance) {
     assertThat(problemDetails).isNotNull();
+    assertThat(problemDetails.getType()).isEqualTo(type);
     assertThat(problemDetails.getTitle()).isEqualTo(title);
+    assertThat(problemDetails.getCode()).isEqualTo(code);
+    assertThat(problemDetails.getParams()).isEqualTo(params);
     assertThat(problemDetails.getStatus()).isEqualTo(status);
     assertThat(problemDetails.getInstance()).isEqualTo(instance);
   }

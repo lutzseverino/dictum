@@ -6,7 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.content.command.CreatePostCommand;
 import dev.dictum.api.content.error.InvalidPostRequestException;
-import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostAlreadyExistsException;
+import dev.dictum.api.content.error.PostAlreadyPublishedException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.model.patch.PostPatch;
 import dev.dictum.api.content.model.state.PostState;
@@ -18,6 +19,7 @@ import dev.dictum.api.web.patch.MergePatchDocument;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +74,7 @@ class PostCommandServiceTest {
             null);
 
     assertThatThrownBy(() -> postCommandService.create(command))
-        .isInstanceOf(PostConflictException.class)
+        .isInstanceOf(PostAlreadyExistsException.class)
         .hasMessage("A post already exists for slug " + DICTUM_BEGINS_SLUG);
   }
 
@@ -117,10 +119,9 @@ class PostCommandServiceTest {
 
   @Test
   void updateRejectsExplicitNullTags() {
-    assertThatThrownBy(
-            () ->
-                postCommandService.update(
-                    REMOTE_CONTROLS_LATER_SLUG, patch("{\"tags\":null}", null, null)))
+    PostPatch patch = patch("{\"tags\":null}", null, null);
+
+    assertThatThrownBy(() -> postCommandService.update(REMOTE_CONTROLS_LATER_SLUG, patch))
         .isInstanceOf(InvalidPatchRequestException.class)
         .hasMessage("Field tags cannot be null");
   }
@@ -136,16 +137,15 @@ class PostCommandServiceTest {
   @Test
   void publishRejectsAlreadyPublishedPosts() {
     assertThatThrownBy(() -> postCommandService.publish(DICTUM_BEGINS_SLUG))
-        .isInstanceOf(PostConflictException.class)
+        .isInstanceOf(PostAlreadyPublishedException.class)
         .hasMessage("Post " + DICTUM_BEGINS_SLUG + " is already published");
   }
 
   @Test
   void updateRejectsUnknownSlugs() {
-    assertThatThrownBy(
-            () ->
-                postCommandService.update(
-                    "unknown-slug", patch("{\"title\":\"Nope\"}", "Nope", null)))
+    PostPatch patch = patch("{\"title\":\"Nope\"}", "Nope", null);
+
+    assertThatThrownBy(() -> postCommandService.update("unknown-slug", patch))
         .isInstanceOf(PostNotFoundException.class)
         .hasMessage("No post exists for slug unknown-slug");
   }
@@ -176,8 +176,10 @@ class PostCommandServiceTest {
       return dev.dictum.api.web.patch.PatchValue.explicitNullValue();
     }
 
-    return dev.dictum.api.web.patch.PatchValue.present(
-        PostTemplate.fromValue(templatePatch.value().getValue()));
+    dev.dictum.api.generated.model.PostTemplate template =
+        Objects.requireNonNull(templatePatch.value(), "Template patch value must be present");
+
+    return dev.dictum.api.web.patch.PatchValue.present(PostTemplate.fromValue(template.getValue()));
   }
 
   private MergePatchDocument patchDocument(String json) {
