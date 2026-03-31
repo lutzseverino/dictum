@@ -3,7 +3,7 @@ title: HTTP API Conventions
 status: accepted
 author: Codex
 created: 2026-03-13
-updated: 2026-03-13
+updated: 2026-03-31
 owner: Engineering
 doc-type: explanation
 summary: Explain the conventional REST and OpenAPI rules used for Dictum control-plane endpoints.
@@ -11,11 +11,7 @@ summary: Explain the conventional REST and OpenAPI rules used for Dictum control
 
 # HTTP API Conventions
 
-## Problem
-
-Dictum needs an API shape that feels unsurprising to contributors and easy to review in OpenAPI, GitHub, and backend code. Because the project is still in its foundational phase, this is the right time to choose a clear default and avoid accidental drift into custom control-plane patterns.
-
-## Explanation
+## Purpose
 
 Dictum prefers conventional REST resource design for its HTTP API.
 
@@ -59,16 +55,12 @@ Use Problem Details for HTTP APIs.
 
 - Error responses should use `application/problem+json`.
 - Error payloads should follow the standard `type`, `title`, `status`, `detail`, and `instance` structure.
+- Dictum extends Problem Details with a stable `code` and structured `params`.
+- Backend code owns `type`, `code`, `params`, and fallback problem text.
+- Frontend code should render user-facing API errors from `code` and `params`.
 
 ### Versioning
 
 Version public HTTP endpoints in the path.
 
 - Dictum uses `/api/v1/...` for the initial contract.
-
-## Consequences
-
-- The API is easier for contributors to understand without project-specific onboarding.
-- OpenAPI documents remain close to what readers expect from a conventional REST service.
-- Backend code can stay disciplined internally without forcing unconventional HTTP shapes externally.
-- Some operations may eventually need action subresources, but that is still more conventional than a generic command bus endpoint.

@@ -49,6 +49,18 @@ export interface ProblemDetails {
      * @memberof ProblemDetails
      */
     instance?: string;
+    /**
+     * Stable machine-readable problem code for client handling and localization.
+     * @type {string}
+     * @memberof ProblemDetails
+     */
+    code: string;
+    /**
+     * 
+     * @type {object}
+     * @memberof ProblemDetails
+     */
+    params: object;
 }
 
 /**
@@ -57,6 +69,8 @@ export interface ProblemDetails {
 export function instanceOfProblemDetails(value: object): value is ProblemDetails {
     if (!('title' in value) || value['title'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('code' in value) || value['code'] === undefined) return false;
+    if (!('params' in value) || value['params'] === undefined) return false;
     return true;
 }
 
@@ -75,6 +89,8 @@ export function ProblemDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
         'status': json['status'],
         'detail': json['detail'] == null ? undefined : json['detail'],
         'instance': json['instance'] == null ? undefined : json['instance'],
+        'code': json['code'],
+        'params': json['params'],
     };
 }
 
@@ -94,6 +110,8 @@ export function ProblemDetailsToJSONTyped(value?: ProblemDetails | null, ignoreD
         'status': value['status'],
         'detail': value['detail'],
         'instance': value['instance'],
+        'code': value['code'],
+        'params': value['params'],
     };
 }
 

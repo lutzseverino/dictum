@@ -79,7 +79,11 @@ class HttpContractTest {
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
 
     JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("type").asText())
+        .isEqualTo("https://dictum.dev/problems/post-not-found");
     assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
+    assertThat(problem.get("code").asText()).isEqualTo("post.not_found");
+    assertThat(problem.get("params").get("slug").asText()).isEqualTo("unknown-slug");
     assertThat(problem.get("status").asInt()).isEqualTo(404);
   }
 
@@ -133,6 +137,36 @@ class HttpContractTest {
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("request.invalid");
+  }
+
+  @Test
+  void createPostReturnsConflictProblemDetailsWhenSlugAlreadyExists() throws Exception {
+    HttpResponse<String> response =
+        request(
+            POST,
+            POSTS_PATH,
+            MediaType.APPLICATION_JSON_VALUE,
+            """
+            {
+              "title": "Duplicate",
+              "slug": "dictum-begins",
+              "excerpt": "Already exists.",
+              "template": "essay",
+              "tags": ["architecture"],
+              "body": "Duplicate body."
+            }
+            """);
+
+    assertThat(response.statusCode()).isEqualTo(409);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("type").asText())
+        .isEqualTo("https://dictum.dev/problems/post-already-exists");
+    assertThat(problem.get("code").asText()).isEqualTo("post.already_exists");
+    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test
@@ -171,6 +205,9 @@ class HttpContractTest {
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
         .hasValueSatisfying(
             value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("request.unsupported_media_type");
   }
 
   @Test
@@ -198,6 +235,20 @@ class HttpContractTest {
     PostResponse post = objectMapper.readValue(response.body(), PostResponse.class);
     assertThat(post.getStatus().getValue()).isEqualTo("published");
     assertThat(post.getPublishedAt()).isNotNull();
+  }
+
+  @Test
+  void publishPostReturnsConflictProblemDetailsWhenAlreadyPublished() throws Exception {
+    HttpResponse<String> response =
+        request(POST, path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG, "publish"), null, null);
+
+    assertThat(response.statusCode()).isEqualTo(409);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("type").asText())
+        .isEqualTo("https://dictum.dev/problems/post-already-published");
+    assertThat(problem.get("code").asText()).isEqualTo("post.already_published");
+    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test

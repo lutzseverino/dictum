@@ -16,7 +16,7 @@ This file is for backlog and sequencing. Durable product, architecture, and refe
 
 ### `packages/content-contract`
 
-Status: resolved on the active cleanup branch
+Status: resolved
 
 Decision:
 
@@ -41,7 +41,7 @@ Moved out of the package model:
 
 ### TypeScript Documentation
 
-Status: resolved on the active cleanup branch
+Status: resolved
 
 See:
 
@@ -53,7 +53,7 @@ These remain better fits for the active backend track than the deferred TypeScri
 
 ### Error Semantics and Frontend Localization Contract
 
-Status: next candidate
+Status: active
 
 Goal:
 
