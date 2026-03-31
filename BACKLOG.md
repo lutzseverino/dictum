@@ -8,7 +8,7 @@ This file is for backlog and sequencing. Durable product, architecture, and refe
 
 ## Current Focus
 
-- Spring Boot backend cleanup and backend feature work
+- Spring Boot backend feature and infrastructure work
 - API contract clarity
 - content-repository runtime behavior
 
@@ -49,12 +49,67 @@ See:
 
 ## Next Backend Items
 
-These remain better fits for the active backend track than the deferred TypeScript work:
+These remain better fits for the active backend track than the deferred TypeScript work.
+
+### Error Semantics and Frontend Localization Contract
+
+Status: next candidate
+
+Goal:
+
+- keep backend error meaning stable without making English backend strings the UI contract
+
+What to do:
+
+- add stable machine-readable error codes to Problem Details responses
+- add structured params for message interpolation where needed
+- keep `type` as the canonical semantic identifier
+- treat `title` and `detail` as fallback/debug strings rather than frontend source-of-truth copy
+- document that frontend clients own localization of API-originated messages
+
+Why it matters:
+
+- full backend i18n can wait
+- error-contract design should not wait, because raw backend strings become expensive contract debt once clients depend on them
+
+### Auth and Session Implementation
+
+Status: pending
 
 - auth and session implementation
-- media and asset workflow design
-- publish and deployment integration
-- content-repository operational behavior such as Git-managed working copies
+
+Goal:
+
+- add real access control to the control-plane API and admin flows
+
+### Media and Asset Workflow
+
+Status: pending
+
+- define how posts reference uploaded assets
+- define backend storage behavior for media and other post-owned files
+
+### Publish and Deployment Integration
+
+Status: pending
+
+- define how publish actions notify or trigger connected frontend deployments
+- decide whether this uses hooks, events, or another explicit integration model
+
+### Content-Repository Operations
+
+Status: pending
+
+- define operational behavior around filesystem-backed repositories
+- evaluate later support for Git-managed working copies
+
+### Operational Backend Hardening
+
+Status: pending
+
+- improve health/readiness behavior
+- tighten startup and runtime failure reporting for invalid content repositories
+- harden operational feedback around configuration and persistence boundaries
 
 ## Notes
 
