@@ -25,7 +25,7 @@ The public blog frontend lives outside this repository and consumes Dictum throu
 - `services/api` owns the control-plane API and orchestration boundaries.
 - `apps/admin` hosts the mobile-first admin app.
 - `packages/api-client` exposes the generated TypeScript client for the control plane.
-- `packages/content-contract` defines the content models and repository contracts shared by Dictum and external blog consumers.
+- `packages/content-contract` defines the content types and repository contracts shared by Dictum and external blog consumers.
 
 ## Repository Layout
 
