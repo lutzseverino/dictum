@@ -8,11 +8,11 @@ import dev.dictum.api.content.command.CreatePostCommand;
 import dev.dictum.api.content.error.InvalidPostRequestException;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
-import dev.dictum.api.content.model.vo.PostPatch;
-import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.model.patch.PostPatch;
+import dev.dictum.api.content.model.state.PostState;
+import dev.dictum.api.content.model.vo.PostStatus;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import dev.dictum.api.content.store.InMemoryPostStore;
-import dev.dictum.api.generated.model.PostStatus;
-import dev.dictum.api.generated.model.PostTemplate;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import java.io.IOException;
@@ -158,11 +158,26 @@ class PostCommandServiceTest {
     return new PostPatch(
         document.field("title", request.getTitle()),
         document.field("excerpt", request.getExcerpt()),
-        document.field("template", request.getTemplate()),
+        toTemplatePatch(document.field("template", request.getTemplate())),
         document.field("tags", request.getTags()),
         document.field("body", request.getBody()),
         document.field("stylesheet", request.getStylesheet()),
         document.field("removeStylesheet", request.getRemoveStylesheet()));
+  }
+
+  private dev.dictum.api.web.patch.PatchValue<PostTemplate> toTemplatePatch(
+      dev.dictum.api.web.patch.PatchValue<dev.dictum.api.generated.model.PostTemplate>
+          templatePatch) {
+    if (!templatePatch.isPresent()) {
+      return dev.dictum.api.web.patch.PatchValue.absent();
+    }
+
+    if (templatePatch.isExplicitNull()) {
+      return dev.dictum.api.web.patch.PatchValue.explicitNullValue();
+    }
+
+    return dev.dictum.api.web.patch.PatchValue.present(
+        PostTemplate.fromValue(templatePatch.value().getValue()));
   }
 
   private MergePatchDocument patchDocument(String json) {

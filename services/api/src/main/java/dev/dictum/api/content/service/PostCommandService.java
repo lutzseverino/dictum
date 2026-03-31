@@ -3,12 +3,12 @@ package dev.dictum.api.content.service;
 import dev.dictum.api.content.command.CreatePostCommand;
 import dev.dictum.api.content.error.PostConflictException;
 import dev.dictum.api.content.error.PostNotFoundException;
-import dev.dictum.api.content.model.vo.PostPatch;
+import dev.dictum.api.content.model.patch.PostPatch;
+import dev.dictum.api.content.model.state.PostState;
 import dev.dictum.api.content.model.vo.PostSlug;
-import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.model.vo.PostStatus;
 import dev.dictum.api.content.model.vo.PostTags;
 import dev.dictum.api.content.store.PostStore;
-import dev.dictum.api.generated.model.PostStatus;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package dev.dictum.api.site.mapper;
 
 import dev.dictum.api.generated.model.SiteSettingsResponse;
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

@@ -1,8 +1,8 @@
 package dev.dictum.api.content.store;
 
-import dev.dictum.api.content.model.vo.PostState;
-import dev.dictum.api.generated.model.PostStatus;
-import dev.dictum.api.generated.model.PostTemplate;
+import dev.dictum.api.content.model.state.PostState;
+import dev.dictum.api.content.model.vo.PostStatus;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

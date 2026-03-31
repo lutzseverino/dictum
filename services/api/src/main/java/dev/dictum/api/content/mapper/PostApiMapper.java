@@ -1,6 +1,8 @@
 package dev.dictum.api.content.mapper;
 
-import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.model.state.PostState;
+import dev.dictum.api.content.model.vo.PostStatus;
+import dev.dictum.api.content.model.vo.PostTemplate;
 import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.PostSummary;
 import java.util.List;
@@ -15,4 +17,16 @@ public interface PostApiMapper {
   List<PostSummary> toSummaries(List<PostState> states);
 
   PostResponse toResponse(PostState state);
+
+  default dev.dictum.api.generated.model.PostStatus toResponseStatus(PostStatus status) {
+    return status == null
+        ? null
+        : dev.dictum.api.generated.model.PostStatus.fromValue(status.value());
+  }
+
+  default dev.dictum.api.generated.model.PostTemplate toResponseTemplate(PostTemplate template) {
+    return template == null
+        ? null
+        : dev.dictum.api.generated.model.PostTemplate.fromValue(template.value());
+  }
 }

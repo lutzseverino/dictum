@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
-import dev.dictum.api.site.model.vo.SiteSettingsPatch;
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.patch.SiteSettingsPatch;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import dev.dictum.api.site.store.InMemorySiteSettingsStore;
 import dev.dictum.api.web.error.InvalidPatchRequestException;
 import dev.dictum.api.web.patch.MergePatchDocument;
