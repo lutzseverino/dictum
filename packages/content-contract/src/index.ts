@@ -22,20 +22,10 @@ export interface BlogPostDocument {
   stylesheets: PostStylesheet[];
 }
 
-export interface BlogPostSummary extends PostFrontmatter {
-  readingMinutes: number;
-}
-
 export interface SiteSettings {
   title: string;
   subtitle: string;
   motd: string;
-}
-
-export interface BlogContentService {
-  getSiteSettings(): Promise<SiteSettings>;
-  listPosts(): Promise<BlogPostSummary[]>;
-  getPost(slug: string): Promise<BlogPostDocument | null>;
 }
 
 export interface ContentRepositoryContract {
@@ -53,32 +43,3 @@ export const dictumContentContract: ContentRepositoryContract = {
   optionalPostStyleFile: "style.css",
   optionalPostMetaFile: "meta.json",
 };
-
-export function estimateReadingMinutes(markdown: string): number {
-  const words = markdown.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 220));
-}
-
-export function summarizePost(post: BlogPostDocument): BlogPostSummary {
-  return {
-    ...post.frontmatter,
-    readingMinutes: estimateReadingMinutes(post.body),
-  };
-}
-
-export function createInMemoryContentService(seed: {
-  settings: SiteSettings;
-  posts: BlogPostDocument[];
-}): BlogContentService {
-  return {
-    async getSiteSettings() {
-      return seed.settings;
-    },
-    async listPosts() {
-      return seed.posts.map(summarizePost);
-    },
-    async getPost(slug: string) {
-      return seed.posts.find((post) => post.frontmatter.slug === slug) ?? null;
-    },
-  };
-}

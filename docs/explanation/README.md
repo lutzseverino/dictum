@@ -3,7 +3,7 @@ title: Explanation
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-25
+updated: 2026-03-31
 owner: Engineering
 doc-type: index
 summary: Explain architectural concepts, system structure, and boundary models in Dictum.
@@ -20,6 +20,7 @@ Store conceptual and architecture-facing documentation that helps contributors u
 - [Product Scope and Boundaries](./product-scope-and-boundaries.md)
 - [Backend Layering and Service Boundaries](./backend-layering-and-service-boundaries.md)
 - [HTTP API Conventions](./http-api-conventions.md)
+- [TypeScript Package Boundaries](./typescript-package-boundaries.md)
 
 ## Scope Boundaries
 

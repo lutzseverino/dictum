@@ -3,7 +3,7 @@ package dev.dictum.api.site.store;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.dictum.api.config.FilesystemContentRoot;
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import dev.dictum.api.support.FilesystemContentFixture;
 import java.nio.file.Files;
 import java.nio.file.Path;

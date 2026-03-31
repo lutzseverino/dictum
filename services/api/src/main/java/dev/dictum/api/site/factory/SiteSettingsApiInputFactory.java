@@ -1,7 +1,7 @@
 package dev.dictum.api.site.factory;
 
 import dev.dictum.api.generated.model.UpdateSiteSettingsRequest;
-import dev.dictum.api.site.model.vo.SiteSettingsPatch;
+import dev.dictum.api.site.model.patch.SiteSettingsPatch;
 import dev.dictum.api.web.patch.MergePatchDocument;
 import dev.dictum.api.web.patch.MergePatchDocumentAccessor;
 import org.springframework.stereotype.Component;

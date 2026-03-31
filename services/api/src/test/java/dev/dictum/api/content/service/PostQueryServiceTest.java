@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.dictum.api.content.error.PostNotFoundException;
-import dev.dictum.api.content.model.vo.PostState;
+import dev.dictum.api.content.model.state.PostState;
 import dev.dictum.api.content.store.InMemoryPostStore;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ class PostQueryServiceTest {
 
     assertThat(responses).hasSize(2);
     assertThat(responses.get(0).slug()).isEqualTo(DICTUM_BEGINS_SLUG);
-    assertThat(responses.get(0).status().getValue()).isEqualTo("published");
+    assertThat(responses.get(0).status().value()).isEqualTo("published");
     assertThat(responses.get(1).slug()).isEqualTo("remote-controls-later");
   }
 

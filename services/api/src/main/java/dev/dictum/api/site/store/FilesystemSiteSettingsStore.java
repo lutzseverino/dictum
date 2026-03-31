@@ -2,7 +2,7 @@ package dev.dictum.api.site.store;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.config.FilesystemContentRoot;
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;

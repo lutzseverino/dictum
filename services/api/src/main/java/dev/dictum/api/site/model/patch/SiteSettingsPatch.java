@@ -1,5 +1,6 @@
-package dev.dictum.api.site.model.vo;
+package dev.dictum.api.site.model.patch;
 
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import dev.dictum.api.web.patch.PatchValue;
 
 public record SiteSettingsPatch(

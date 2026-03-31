@@ -1,7 +1,7 @@
 package dev.dictum.api.site.service;
 
-import dev.dictum.api.site.model.vo.SiteSettingsPatch;
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.patch.SiteSettingsPatch;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 import dev.dictum.api.site.store.SiteSettingsStore;
 import org.springframework.stereotype.Service;
 

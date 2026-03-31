@@ -1,6 +1,6 @@
 package dev.dictum.api.site.store;
 
-import dev.dictum.api.site.model.vo.SiteSettingsState;
+import dev.dictum.api.site.model.state.SiteSettingsState;
 
 public class InMemorySiteSettingsStore implements SiteSettingsStore {
 
