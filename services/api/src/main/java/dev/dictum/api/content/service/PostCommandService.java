@@ -1,7 +1,8 @@
 package dev.dictum.api.content.service;
 
 import dev.dictum.api.content.command.CreatePostCommand;
-import dev.dictum.api.content.error.PostConflictException;
+import dev.dictum.api.content.error.PostAlreadyExistsException;
+import dev.dictum.api.content.error.PostAlreadyPublishedException;
 import dev.dictum.api.content.error.PostNotFoundException;
 import dev.dictum.api.content.model.patch.PostPatch;
 import dev.dictum.api.content.model.state.PostState;
@@ -25,7 +26,7 @@ public class PostCommandService {
     String slug = new PostSlug(command.slug()).value();
 
     if (postStore.exists(slug)) {
-      throw new PostConflictException("A post already exists for slug " + slug);
+      throw new PostAlreadyExistsException(slug);
     }
 
     PostState created =
@@ -55,7 +56,7 @@ public class PostCommandService {
     PostState current = requireState(slug);
 
     if (current.status() == PostStatus.PUBLISHED) {
-      throw new PostConflictException("Post " + slug + " is already published");
+      throw new PostAlreadyPublishedException(slug);
     }
 
     PostState published =
@@ -79,6 +80,6 @@ public class PostCommandService {
 
     return postStore
         .findBySlug(validatedSlug)
-        .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
+        .orElseThrow(() -> new PostNotFoundException(validatedSlug));
   }
 }

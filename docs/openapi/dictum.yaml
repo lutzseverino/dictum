@@ -270,9 +270,12 @@ components:
           examples:
             notFound:
               value:
-                type: https://dictum.dev/problems/not-found
+                type: https://dictum.dev/problems/post-not-found
                 title: Resource not found
                 status: 404
+                code: post.not_found
+                params:
+                  slug: remote-controls-later
                 detail: No post exists for slug remote-controls-later
                 instance: /api/v1/posts/remote-controls-later
   schemas:
@@ -443,10 +446,12 @@ components:
           type: string
     ProblemDetails:
       type: object
-      additionalProperties: true
+      additionalProperties: false
       required:
         - title
         - status
+        - code
+        - params
       properties:
         type:
           type: string
@@ -462,3 +467,12 @@ components:
         instance:
           type: string
           format: uri-reference
+        code:
+          type: string
+          description: Stable machine-readable problem code for client handling and localization.
+        params:
+          $ref: "#/components/schemas/ProblemParams"
+          description: Structured interpolation values associated with the problem code.
+    ProblemParams:
+      type: object
+      additionalProperties: true

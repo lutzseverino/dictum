@@ -25,6 +25,6 @@ public class PostQueryService {
 
     return postStore
         .findBySlug(validatedSlug)
-        .orElseThrow(() -> new PostNotFoundException("No post exists for slug " + validatedSlug));
+        .orElseThrow(() -> new PostNotFoundException(validatedSlug));
   }
 }
