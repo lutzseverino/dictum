@@ -11,6 +11,8 @@ summary:
 
 # Title
 
+Follow the repository-standard section order exactly.
+
 ## Status
 
 Accepted | Superseded | Draft
@@ -33,4 +35,3 @@ State the chosen option clearly.
 
 - Option A and why it was not chosen
 - Option B and why it was not chosen
-

@@ -36,6 +36,7 @@ Use these templates to preserve Dictum's documentation structure without forcing
 - `tutorial`: guided learning sequence for a full outcome
 - `explanation`: stable conceptual guidance; avoid proposal or checklist framing
 - `decision`: MADR decision record with context, decision, consequences, and alternatives
+  Use the repository-standard section order from [docs/decisions/README.md](../decisions/README.md).
 
 ## Usage Rules
 
