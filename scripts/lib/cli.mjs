@@ -53,6 +53,17 @@ export function runCheckedCommand(command, args, options = {}) {
   }
 }
 
+export function runCapturedCommand(command, args, options = {}) {
+  return spawnSync(command, args, {
+    cwd: process.cwd(),
+    env: process.env,
+    encoding: "utf8",
+    stdio: "pipe",
+    maxBuffer: 50 * 1024 * 1024,
+    ...options,
+  });
+}
+
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

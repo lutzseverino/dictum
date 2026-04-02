@@ -18,6 +18,7 @@
     "sonar:start": "docker compose up -d",
     "sonar:stop": "docker compose down",
     "sonar:scan": "pnpm exec sonar",
+    "sonar:ide": "node scripts/quality/analyze-with-sonarqube-ide.mjs",
     "sonar:validate": "node scripts/quality/validate-with-sonar.mjs"
   },
   "devDependencies": {
