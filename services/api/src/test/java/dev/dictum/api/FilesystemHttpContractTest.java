@@ -57,7 +57,8 @@ class FilesystemHttpContractTest {
 
   @Test
   void listPostsReadsSeededFilesystemContent() throws Exception {
-    HttpResponse<String> response = authenticatedGet("/api/v1/posts");
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated("/api/v1/posts", ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -71,7 +72,7 @@ class FilesystemHttpContractTest {
   @Test
   void updateSiteSettingsWorksAgainstFilesystemPersistence() throws Exception {
     HttpResponse<String> response =
-        authenticatedPatch(
+        sessionHttpClient.requestAuthenticated(
             "PATCH",
             "/api/v1/settings/site",
             MERGE_PATCH_JSON,
@@ -80,7 +81,9 @@ class FilesystemHttpContractTest {
               "subtitle": "A modular markdown blog platform.",
               "motd": "Filesystem-backed control plane wiring is live."
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -88,19 +91,6 @@ class FilesystemHttpContractTest {
         objectMapper.readValue(response.body(), SiteSettingsResponse.class);
     assertThat(settings.getSubtitle()).isEqualTo("A modular markdown blog platform.");
     assertThat(settings.getMotd()).isEqualTo("Filesystem-backed control plane wiring is live.");
-  }
-
-  private HttpResponse<String> authenticatedGet(String path)
-      throws IOException, InterruptedException {
-    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
-    return sessionHttpClient.get(path);
-  }
-
-  private HttpResponse<String> authenticatedPatch(
-      String method, String path, String contentType, String body)
-      throws IOException, InterruptedException {
-    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
-    return sessionHttpClient.request(method, path, contentType, body, true);
   }
 
   private static Path createContentRoot() {

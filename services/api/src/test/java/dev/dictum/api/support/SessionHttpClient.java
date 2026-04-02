@@ -49,6 +49,12 @@ public class SessionHttpClient {
     return response;
   }
 
+  public HttpResponse<String> getAuthenticated(String path, String username, String password)
+      throws IOException, InterruptedException {
+    createSession(username, password);
+    return get(path);
+  }
+
   public HttpResponse<String> get(String path) throws IOException, InterruptedException {
     return request("GET", path, null, null, false);
   }
@@ -65,6 +71,13 @@ public class SessionHttpClient {
 
   public HttpResponse<String> delete(String path) throws IOException, InterruptedException {
     return request("DELETE", path, null, null, true);
+  }
+
+  public HttpResponse<String> requestAuthenticated(
+      String method, String path, String contentType, String body, String username, String password)
+      throws IOException, InterruptedException {
+    createSession(username, password);
+    return request(method, path, contentType, body, true);
   }
 
   public HttpResponse<String> request(
