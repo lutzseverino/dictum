@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Dictum Control Plane API
- * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership, provider workflows, runtime auth implementation, or persistence-specific details. 
+ * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership or persistence-specific details. 
  *
  * The version of the OpenAPI document: 0.1.0
  * 
@@ -29,6 +29,7 @@ import {
 } from '../models/index';
 
 export interface UpdateSiteSettingsOperationRequest {
+    xCSRFTOKEN: string;
     updateSiteSettingsRequest: UpdateSiteSettingsRequest;
 }
 
@@ -73,6 +74,13 @@ export class SiteSettingsApi extends runtime.BaseAPI {
      * Update site settings
      */
     async updateSiteSettingsRaw(requestParameters: UpdateSiteSettingsOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SiteSettingsResponse>> {
+        if (requestParameters['xCSRFTOKEN'] == null) {
+            throw new runtime.RequiredError(
+                'xCSRFTOKEN',
+                'Required parameter "xCSRFTOKEN" was null or undefined when calling updateSiteSettings().'
+            );
+        }
+
         if (requestParameters['updateSiteSettingsRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateSiteSettingsRequest',
@@ -85,6 +93,10 @@ export class SiteSettingsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/merge-patch+json';
+
+        if (requestParameters['xCSRFTOKEN'] != null) {
+            headerParameters['X-CSRF-TOKEN'] = String(requestParameters['xCSRFTOKEN']);
+        }
 
 
         let urlPath = `/api/v1/settings/site`;

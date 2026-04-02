@@ -41,7 +41,8 @@ public class PostsController implements PostsApi {
   }
 
   @Override
-  public ResponseEntity<PostResponse> createPost(CreatePostRequest createPostRequest) {
+  public ResponseEntity<PostResponse> createPost(
+      String xCsrfToken, CreatePostRequest createPostRequest) {
     PostResponse response =
         postApiMapper.toResponse(
             postCommandService.create(postApiInputFactory.toCreateCommand(createPostRequest)));
@@ -58,14 +59,15 @@ public class PostsController implements PostsApi {
   }
 
   @Override
-  public ResponseEntity<PostResponse> updatePost(String slug, UpdatePostRequest updatePostRequest) {
+  public ResponseEntity<PostResponse> updatePost(
+      String slug, String xCsrfToken, UpdatePostRequest updatePostRequest) {
     return ResponseEntity.ok(
         postApiMapper.toResponse(
             postCommandService.update(slug, postApiInputFactory.toPatch(updatePostRequest))));
   }
 
   @Override
-  public ResponseEntity<PostResponse> publishPost(String slug) {
+  public ResponseEntity<PostResponse> publishPost(String slug, String xCsrfToken) {
     return ResponseEntity.ok(postApiMapper.toResponse(postCommandService.publish(slug)));
   }
 }

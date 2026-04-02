@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Dictum Control Plane API
- * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership, provider workflows, runtime auth implementation, or persistence-specific details. 
+ * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership or persistence-specific details. 
  *
  * The version of the OpenAPI document: 0.1.0
  * 
@@ -35,6 +35,7 @@ import {
 } from '../models/index';
 
 export interface CreatePostOperationRequest {
+    xCSRFTOKEN: string;
     createPostRequest: CreatePostRequest;
 }
 
@@ -44,10 +45,12 @@ export interface GetPostRequest {
 
 export interface PublishPostRequest {
     slug: string;
+    xCSRFTOKEN: string;
 }
 
 export interface UpdatePostOperationRequest {
     slug: string;
+    xCSRFTOKEN: string;
     updatePostRequest: UpdatePostRequest;
 }
 
@@ -61,6 +64,13 @@ export class PostsApi extends runtime.BaseAPI {
      * Create a post
      */
     async createPostRaw(requestParameters: CreatePostOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PostResponse>> {
+        if (requestParameters['xCSRFTOKEN'] == null) {
+            throw new runtime.RequiredError(
+                'xCSRFTOKEN',
+                'Required parameter "xCSRFTOKEN" was null or undefined when calling createPost().'
+            );
+        }
+
         if (requestParameters['createPostRequest'] == null) {
             throw new runtime.RequiredError(
                 'createPostRequest',
@@ -73,6 +83,10 @@ export class PostsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xCSRFTOKEN'] != null) {
+            headerParameters['X-CSRF-TOKEN'] = String(requestParameters['xCSRFTOKEN']);
+        }
 
 
         let urlPath = `/api/v1/posts`;
@@ -179,9 +193,20 @@ export class PostsApi extends runtime.BaseAPI {
             );
         }
 
+        if (requestParameters['xCSRFTOKEN'] == null) {
+            throw new runtime.RequiredError(
+                'xCSRFTOKEN',
+                'Required parameter "xCSRFTOKEN" was null or undefined when calling publishPost().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xCSRFTOKEN'] != null) {
+            headerParameters['X-CSRF-TOKEN'] = String(requestParameters['xCSRFTOKEN']);
+        }
 
 
         let urlPath = `/api/v1/posts/{slug}/publish`;
@@ -218,6 +243,13 @@ export class PostsApi extends runtime.BaseAPI {
             );
         }
 
+        if (requestParameters['xCSRFTOKEN'] == null) {
+            throw new runtime.RequiredError(
+                'xCSRFTOKEN',
+                'Required parameter "xCSRFTOKEN" was null or undefined when calling updatePost().'
+            );
+        }
+
         if (requestParameters['updatePostRequest'] == null) {
             throw new runtime.RequiredError(
                 'updatePostRequest',
@@ -230,6 +262,10 @@ export class PostsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/merge-patch+json';
+
+        if (requestParameters['xCSRFTOKEN'] != null) {
+            headerParameters['X-CSRF-TOKEN'] = String(requestParameters['xCSRFTOKEN']);
+        }
 
 
         let urlPath = `/api/v1/posts/{slug}`;

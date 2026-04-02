@@ -3,7 +3,7 @@ title: Reference
 status: accepted
 author: Codex
 created: 2026-03-12
-updated: 2026-03-25
+updated: 2026-04-01
 owner: Engineering
 doc-type: index
 summary: Index factual and contract-oriented documentation for Dictum.
@@ -17,6 +17,7 @@ Store factual lookup material such as conventions, schemas, contracts, and other
 
 ## Documents
 
+- [Auth Configuration](./auth-configuration.md)
 - [Content Repository Contract](./content-repository-contract.md)
 
 ## Scope Boundaries

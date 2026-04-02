@@ -53,7 +53,7 @@ These remain better fits for the active backend track than the deferred TypeScri
 
 ### Error Semantics and Frontend Localization Contract
 
-Status: active
+Status: resolved
 
 Goal:
 
@@ -74,13 +74,15 @@ Why it matters:
 
 ### Auth and Session Implementation
 
-Status: pending
-
-- auth and session implementation
+Status: resolved
 
 Goal:
 
 - add real access control to the control-plane API and admin flows
+
+Decision:
+
+- `docs/decisions/0005-adopt-provider-agnostic-session-auth.md`
 
 ### Media and Asset Workflow
 

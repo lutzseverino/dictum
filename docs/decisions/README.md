@@ -21,6 +21,7 @@ Preserve durable decisions, tradeoffs, and rejected alternatives so future contr
 - [0002: Keep entities inside service boundaries](./0002-keep-entities-inside-service-boundaries.md)
 - [0003: Adopt spec-first code generation](./0003-adopt-spec-first-code-generation.md)
 - [0004: Define control-plane product scope](./0004-define-control-plane-product-scope.md)
+- [0005: Adopt provider-agnostic session authentication](./0005-adopt-provider-agnostic-session-auth.md)
 
 ## Scope Boundaries
 

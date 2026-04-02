@@ -52,14 +52,15 @@ dictum/
 
 1. Install frontend dependencies from the repo root with `pnpm install`.
 2. Set `DICTUM_CONTENT_ROOT` to the root of a content repository that matches the Dictum content contract.
-3. Run the admin app with `pnpm dev:admin`.
-4. Run the API with `pnpm dev:api`.
-5. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
-6. Check Java formatting and baseline requirements with `pnpm lint:api`.
-7. Apply Google Java Format to the API with `pnpm format:api`.
-8. Run API tests with `pnpm test:api`.
-9. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
-10. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script can offer Docker-based local setup in an interactive terminal and otherwise warns and skips only the Sonar scan.
+3. Set `DICTUM_AUTH_ADMIN_USERNAME` and `DICTUM_AUTH_ADMIN_PASSWORD` for the control-plane session login.
+4. Run the admin app with `pnpm dev:admin`.
+5. Run the API with `pnpm dev:api`.
+6. Check the frontend workspace with `pnpm lint:web` and `pnpm typecheck:web`.
+7. Check Java formatting and baseline requirements with `pnpm lint:api`.
+8. Apply Google Java Format to the API with `pnpm format:api`.
+9. Run API tests with `pnpm test:api`.
+10. Start a local SonarQube Community Build stack with `pnpm sonar:start`.
+11. Run the full validation flow with `pnpm sonar:validate`; if SonarQube is not configured locally, the script can offer Docker-based local setup in an interactive terminal and otherwise warns and skips only the Sonar scan.
 
 ## Content Model
 
@@ -74,6 +75,13 @@ See [docs/reference/content-repository-contract.md](./docs/reference/content-rep
 
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+## Auth
+
+- Control-plane API access uses cookie-backed sessions.
+- Login, current session, and logout live under `/api/v1/session`.
+- Unsafe authenticated requests require `X-CSRF-TOKEN`.
+- Auth configuration is documented in [docs/reference/auth-configuration.md](./docs/reference/auth-configuration.md).
 
 ## Product
 

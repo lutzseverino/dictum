@@ -3,7 +3,7 @@ title: HTTP API Conventions
 status: accepted
 author: Codex
 created: 2026-03-13
-updated: 2026-03-31
+updated: 2026-04-01
 owner: Engineering
 doc-type: explanation
 summary: Explain the conventional REST and OpenAPI rules used for Dictum control-plane endpoints.
@@ -58,6 +58,16 @@ Use Problem Details for HTTP APIs.
 - Dictum extends Problem Details with a stable `code` and structured `params`.
 - Backend code owns `type`, `code`, `params`, and fallback problem text.
 - Frontend code should render user-facing API errors from `code` and `params`.
+
+### Authentication
+
+Dictum protects control-plane endpoints with authenticated sessions.
+
+- The first auth slice uses cookie-backed sessions.
+- `POST /api/v1/session` creates a session.
+- `GET /api/v1/session` returns the current authenticated session.
+- `DELETE /api/v1/session` invalidates the current authenticated session.
+- Unsafe authenticated requests must include `X-CSRF-TOKEN`.
 
 ### Versioning
 

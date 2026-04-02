@@ -2,6 +2,7 @@ package dev.dictum.api.web.error;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.dictum.api.auth.error.InvalidCredentialsException;
 import dev.dictum.api.content.error.InvalidPostRequestException;
 import dev.dictum.api.content.error.PostAlreadyExistsException;
 import dev.dictum.api.content.error.PostAlreadyPublishedException;
@@ -20,14 +21,15 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 class ApiProblemHandlerTest {
 
   private static final String BAD_REQUEST_TITLE = "Bad request";
-  private static final String POST_PATH = path("api", "v1", "posts", "dictum-begins");
+  private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String POST_PATH = path("api", "v1", "posts", DICTUM_BEGINS_SLUG);
 
   private ApiProblemHandler apiProblemHandler;
   private MockHttpServletRequest request;
 
   @BeforeEach
   void setUp() {
-    apiProblemHandler = new ApiProblemHandler();
+    apiProblemHandler = new ApiProblemHandler(new ApiProblemFactory());
     request = new MockHttpServletRequest("PATCH", POST_PATH);
   }
 
@@ -53,7 +55,7 @@ class ApiProblemHandlerTest {
   void handlePostAlreadyExistsReturnsConflictProblemDetails() {
     var response =
         apiProblemHandler.handlePostAlreadyExists(
-            new PostAlreadyExistsException("dictum-begins"), request);
+            new PostAlreadyExistsException(DICTUM_BEGINS_SLUG), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     assertProblem(
@@ -61,7 +63,7 @@ class ApiProblemHandlerTest {
         "https://dictum.dev/problems/post-already-exists",
         "Conflict",
         "post.already_exists",
-        Map.of("slug", "dictum-begins"),
+        Map.of("slug", DICTUM_BEGINS_SLUG),
         409,
         POST_PATH);
   }
@@ -70,7 +72,7 @@ class ApiProblemHandlerTest {
   void handlePostAlreadyPublishedReturnsConflictProblemDetails() {
     var response =
         apiProblemHandler.handlePostAlreadyPublished(
-            new PostAlreadyPublishedException("dictum-begins"), request);
+            new PostAlreadyPublishedException(DICTUM_BEGINS_SLUG), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     assertProblem(
@@ -78,7 +80,7 @@ class ApiProblemHandlerTest {
         "https://dictum.dev/problems/post-already-published",
         "Conflict",
         "post.already_published",
-        Map.of("slug", "dictum-begins"),
+        Map.of("slug", DICTUM_BEGINS_SLUG),
         409,
         POST_PATH);
   }
@@ -149,6 +151,22 @@ class ApiProblemHandlerTest {
         "request.invalid",
         Map.of(),
         400,
+        POST_PATH);
+  }
+
+  @Test
+  void handleInvalidCredentialsReturnsUnauthorizedProblemDetails() {
+    var response =
+        apiProblemHandler.handleInvalidCredentials(new InvalidCredentialsException(), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/invalid-credentials",
+        "Authentication failed",
+        "auth.invalid_credentials",
+        Map.of(),
+        401,
         POST_PATH);
   }
 

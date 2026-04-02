@@ -5,12 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.PostResponse;
+import dev.dictum.api.generated.model.SessionResponse;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
+import dev.dictum.api.support.SessionHttpClient;
+import dev.dictum.api.support.SessionHttpClient.HttpMethod;
+import dev.dictum.api.support.TestAdminCredentials;
 import java.net.http.HttpResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -19,30 +20,97 @@ import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"dictum.content.repository=in-memory"})
+    properties = {
+      "dictum.content.repository=in-memory",
+      TestAdminCredentials.USERNAME_PROPERTY,
+      TestAdminCredentials.PASSWORD_PROPERTY
+    })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class HttpContractTest {
 
-  private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
+  private static final String PARAMS_FIELD = "params";
   private static final String POSTS_SEGMENT = "posts";
   private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String REMOTE_CONTROLS_LATER_SLUG = "remote-controls-later";
+  private static final String UNKNOWN_SLUG = "unknown-slug";
+  private static final String ADMIN_TAG = "admin";
+  private static final String API_TAG = "api";
+  private static final String SESSION_PATH = path("api", "v1", "session");
   private static final String POSTS_PATH = path("api", "v1", POSTS_SEGMENT);
   private static final String REMOTE_CONTROLS_LATER_PATH =
-      path("api", "v1", POSTS_SEGMENT, "remote-controls-later");
+      path("api", "v1", POSTS_SEGMENT, REMOTE_CONTROLS_LATER_SLUG);
   private static final String SITE_SETTINGS_PATH = path("api", "v1", "settings", "site");
-  private static final String GET = "GET";
-  private static final String PATCH = "PATCH";
-  private static final String POST = "POST";
+  private static final String ADMIN_USERNAME = TestAdminCredentials.USERNAME;
+  private static final String ADMIN_PASSWORD = TestAdminCredentials.SECRET;
 
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+  private SessionHttpClient sessionHttpClient;
 
   @LocalServerPort private int port;
 
+  @BeforeEach
+  void setUp() {
+    sessionHttpClient = new SessionHttpClient(baseUrl(), objectMapper);
+  }
+
+  @Test
+  void getSessionReturnsCurrentAuthenticatedSession() throws Exception {
+    HttpResponse<String> loginResponse =
+        sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
+
+    assertThat(loginResponse.statusCode()).isEqualTo(200);
+
+    HttpResponse<String> response = sessionHttpClient.get(SESSION_PATH);
+
+    assertThat(response.statusCode()).isEqualTo(200);
+
+    SessionResponse session = objectMapper.readValue(response.body(), SessionResponse.class);
+    assertThat(session.getUsername()).isEqualTo(ADMIN_USERNAME);
+    assertThat(session.getCsrfToken()).isNotBlank();
+  }
+
+  @Test
+  void createSessionRejectsInvalidCredentials() throws Exception {
+    HttpResponse<String> response =
+        sessionHttpClient.createSession(ADMIN_USERNAME, "wrong-password");
+
+    assertThat(response.statusCode()).isEqualTo(401);
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("auth.invalid_credentials");
+  }
+
+  @Test
+  void protectedEndpointsRejectUnauthenticatedRequests() throws Exception {
+    HttpResponse<String> response = sessionHttpClient.get(POSTS_PATH);
+
+    assertThat(response.statusCode()).isEqualTo(401);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("auth.unauthenticated");
+  }
+
+  @Test
+  void unsafeProtectedEndpointsReturnUnauthenticatedProblemWhenNoSessionExists() throws Exception {
+    HttpResponse<String> response =
+        sessionHttpClient.patchWithoutCsrf(
+            REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, "{\"title\":\"No session\"}");
+
+    assertThat(response.statusCode()).isEqualTo(401);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("auth.unauthenticated");
+  }
+
   @Test
   void listPostsReturnsPublishedSummaries() throws Exception {
-    HttpResponse<String> response = get(POSTS_PATH);
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated(POSTS_PATH, ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -54,12 +122,14 @@ class HttpContractTest {
     assertThat(posts).hasSize(2);
     assertThat(posts.get(0).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
     assertThat(posts.get(0).get("status").asText()).isEqualTo("published");
-    assertThat(posts.get(1).get("slug").asText()).isEqualTo("remote-controls-later");
+    assertThat(posts.get(1).get("slug").asText()).isEqualTo(REMOTE_CONTROLS_LATER_SLUG);
   }
 
   @Test
   void getPostReturnsTheFullPostRepresentation() throws Exception {
-    HttpResponse<String> response = get(path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG));
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated(
+            path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG), ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -71,7 +141,9 @@ class HttpContractTest {
 
   @Test
   void getPostReturnsProblemDetailsForUnknownSlug() throws Exception {
-    HttpResponse<String> response = get(path("api", "v1", POSTS_SEGMENT, "unknown-slug"));
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated(
+            path("api", "v1", POSTS_SEGMENT, UNKNOWN_SLUG), ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(404);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -83,15 +155,15 @@ class HttpContractTest {
         .isEqualTo("https://dictum.dev/problems/post-not-found");
     assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
     assertThat(problem.get("code").asText()).isEqualTo("post.not_found");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo("unknown-slug");
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(UNKNOWN_SLUG);
     assertThat(problem.get("status").asInt()).isEqualTo(404);
   }
 
   @Test
   void createPostReturnsCreatedResourceAndLocationHeader() throws Exception {
     HttpResponse<String> response =
-        request(
-            POST,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -103,7 +175,9 @@ class HttpContractTest {
               "tags": ["product", "mobile"],
               "body": "Remote editing should stay lightweight."
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(201);
     assertThat(response.headers().firstValue("location"))
@@ -117,8 +191,8 @@ class HttpContractTest {
   @Test
   void createPostRejectsUnknownRequestFields() throws Exception {
     HttpResponse<String> response =
-        request(
-            POST,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -131,7 +205,9 @@ class HttpContractTest {
               "body": "Unknown field body.",
               "unexpected": "value"
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(400);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -145,8 +221,8 @@ class HttpContractTest {
   @Test
   void createPostReturnsConflictProblemDetailsWhenSlugAlreadyExists() throws Exception {
     HttpResponse<String> response =
-        request(
-            POST,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -158,7 +234,9 @@ class HttpContractTest {
               "tags": ["architecture"],
               "body": "Duplicate body."
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(409);
 
@@ -166,14 +244,14 @@ class HttpContractTest {
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/post-already-exists");
     assertThat(problem.get("code").asText()).isEqualTo("post.already_exists");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test
   void updatePostAppliesMergePatchThroughTheHttpSurface() throws Exception {
     HttpResponse<String> response =
-        request(
-            PATCH,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MERGE_PATCH_JSON,
             """
@@ -181,7 +259,9 @@ class HttpContractTest {
               "title": "Remote Controls, Sooner",
               "tags": ["admin", "api"]
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -189,17 +269,19 @@ class HttpContractTest {
     assertThat(post.getTitle()).isEqualTo("Remote Controls, Sooner");
     assertThat(post.getExcerpt())
         .isEqualTo("The admin experience will later own publish and settings mutations.");
-    assertThat(post.getTags()).containsExactly("admin", "api");
+    assertThat(post.getTags()).containsExactly(ADMIN_TAG, API_TAG);
   }
 
   @Test
   void updatePostRejectsWrongMediaType() throws Exception {
     HttpResponse<String> response =
-        request(
-            PATCH,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MediaType.APPLICATION_JSON_VALUE,
-            "{\"title\":\"Wrong media type\"}");
+            "{\"title\":\"Wrong media type\"}",
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(415);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -216,7 +298,13 @@ class HttpContractTest {
     String payload = "{\"body\":\"" + largeBody + "\"}";
 
     HttpResponse<String> response =
-        request(PATCH, REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, payload);
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.PATCH,
+            REMOTE_CONTROLS_LATER_PATH,
+            MERGE_PATCH_JSON,
+            payload,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -228,7 +316,13 @@ class HttpContractTest {
   @Test
   void publishPostTransitionsTheDraftToPublished() throws Exception {
     HttpResponse<String> response =
-        request(POST, REMOTE_CONTROLS_LATER_PATH + "/publish", null, null);
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.POST,
+            REMOTE_CONTROLS_LATER_PATH + "/publish",
+            null,
+            null,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -240,7 +334,13 @@ class HttpContractTest {
   @Test
   void publishPostReturnsConflictProblemDetailsWhenAlreadyPublished() throws Exception {
     HttpResponse<String> response =
-        request(POST, path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG, "publish"), null, null);
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.POST,
+            path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG, "publish"),
+            null,
+            null,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(409);
 
@@ -248,12 +348,13 @@ class HttpContractTest {
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/post-already-published");
     assertThat(problem.get("code").asText()).isEqualTo("post.already_published");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test
   void getSiteSettingsReturnsTheCurrentSiteValues() throws Exception {
-    HttpResponse<String> response = get(SITE_SETTINGS_PATH);
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated(SITE_SETTINGS_PATH, ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -266,8 +367,8 @@ class HttpContractTest {
   @Test
   void updateSiteSettingsReturnsTheUpdatedRepresentation() throws Exception {
     HttpResponse<String> response =
-        request(
-            PATCH,
+        sessionHttpClient.requestAuthenticated(
+            HttpMethod.PATCH,
             SITE_SETTINGS_PATH,
             MERGE_PATCH_JSON,
             """
@@ -275,7 +376,9 @@ class HttpContractTest {
               "subtitle": "A modular markdown blog platform.",
               "motd": "API-first contract work is underway."
             }
-            """);
+            """,
+            ADMIN_USERNAME,
+            ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(200);
 
@@ -286,39 +389,30 @@ class HttpContractTest {
     assertThat(settings.getMotd()).isEqualTo("API-first contract work is underway.");
   }
 
-  private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-    return request(GET, path, null, null);
+  @Test
+  void unsafeRequestsRequireCsrfToken() throws Exception {
+    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
+
+    HttpResponse<String> response =
+        sessionHttpClient.patchWithoutCsrf(
+            REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, "{\"title\":\"No CSRF\"}");
+
+    assertThat(response.statusCode()).isEqualTo(403);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("request.csrf_invalid");
   }
 
-  private HttpResponse<String> request(String method, String path, String contentType, String body)
-      throws IOException, InterruptedException {
-    HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(baseUrl() + path));
+  @Test
+  void deleteSessionInvalidatesTheCurrentSession() throws Exception {
+    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
 
-    if (contentType != null) {
-      builder.header("Content-Type", contentType);
-    }
+    HttpResponse<String> response = sessionHttpClient.delete(SESSION_PATH);
 
-    HttpRequest request =
-        switch (method) {
-          case POST ->
-              builder
-                  .POST(
-                      body == null
-                          ? HttpRequest.BodyPublishers.noBody()
-                          : HttpRequest.BodyPublishers.ofString(body))
-                  .build();
-          case PATCH ->
-              builder
-                  .method(
-                      PATCH,
-                      body == null
-                          ? HttpRequest.BodyPublishers.noBody()
-                          : HttpRequest.BodyPublishers.ofString(body))
-                  .build();
-          default -> builder.GET().build();
-        };
+    assertThat(response.statusCode()).isEqualTo(204);
 
-    return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    HttpResponse<String> sessionResponse = sessionHttpClient.get(SESSION_PATH);
+    assertThat(sessionResponse.statusCode()).isEqualTo(401);
   }
 
   private String baseUrl() {

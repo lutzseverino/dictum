@@ -2,7 +2,7 @@
 /* eslint-disable */
 /**
  * Dictum Control Plane API
- * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership, provider workflows, runtime auth implementation, or persistence-specific details. 
+ * This contract defines the first reviewable HTTP surface for Dictum using conventional REST resource design. It covers post management and site settings without introducing public-site ownership or persistence-specific details. 
  *
  * The version of the OpenAPI document: 0.1.0
  * 
