@@ -3,6 +3,7 @@ package dev.dictum.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.dictum.api.support.FilesystemContentFixture;
+import dev.dictum.api.support.TestAdminCredentials;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -11,12 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 class AuthConfigurationTest {
-
-  @SuppressWarnings("java:S2068")
-  private static final String ADMIN_USERNAME_PROPERTY = "dictum.auth.admin.username=admin";
-
-  @SuppressWarnings("java:S2068")
-  private static final String ADMIN_PASSWORD_PROPERTY = "dictum.auth.admin.password=change-me";
 
   private final WebApplicationContextRunner contextRunner =
       new WebApplicationContextRunner().withUserConfiguration(DictumApiApplication.class);
@@ -40,8 +35,8 @@ class AuthConfigurationTest {
 
     contextRunner
         .withPropertyValues(
-            ADMIN_USERNAME_PROPERTY,
-            ADMIN_PASSWORD_PROPERTY,
+            TestAdminCredentials.USERNAME_PROPERTY,
+            TestAdminCredentials.PASSWORD_PROPERTY,
             "dictum.content.repository=filesystem",
             "dictum.content.root=" + contentRoot)
         .run(context -> assertThat(context).hasNotFailed());

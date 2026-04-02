@@ -8,6 +8,7 @@ import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.support.FilesystemContentFixture;
 import dev.dictum.api.support.SessionHttpClient;
 import dev.dictum.api.support.SessionHttpClient.HttpMethod;
+import dev.dictum.api.support.TestAdminCredentials;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.http.HttpResponse;
@@ -25,17 +26,16 @@ import org.springframework.test.context.DynamicPropertySource;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "dictum.content.repository=filesystem",
-      "dictum.auth.admin.username=admin",
-      "dictum.auth.admin.password=change-me"
+      TestAdminCredentials.USERNAME_PROPERTY,
+      TestAdminCredentials.PASSWORD_PROPERTY
     })
-@SuppressWarnings("java:S2068")
 class FilesystemHttpContractTest {
 
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
   private static final Path CONTENT_ROOT = createContentRoot();
-  private static final String ADMIN_USERNAME = "admin";
-  private static final String ADMIN_PASSWORD = "change-me";
+  private static final String ADMIN_USERNAME = TestAdminCredentials.USERNAME;
+  private static final String ADMIN_PASSWORD = TestAdminCredentials.SECRET;
 
   static {
     FilesystemContentFixture.writeSeed(CONTENT_ROOT);

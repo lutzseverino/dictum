@@ -9,6 +9,7 @@ import dev.dictum.api.generated.model.SessionResponse;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.support.SessionHttpClient;
 import dev.dictum.api.support.SessionHttpClient.HttpMethod;
+import dev.dictum.api.support.TestAdminCredentials;
 import java.net.http.HttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +22,10 @@ import org.springframework.test.annotation.DirtiesContext;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "dictum.content.repository=in-memory",
-      "dictum.auth.admin.username=admin",
-      "dictum.auth.admin.password=change-me"
+      TestAdminCredentials.USERNAME_PROPERTY,
+      TestAdminCredentials.PASSWORD_PROPERTY
     })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@SuppressWarnings("java:S2068")
 class HttpContractTest {
 
   private static final String CONTENT_TYPE_HEADER = "content-type";
@@ -42,8 +42,8 @@ class HttpContractTest {
   private static final String REMOTE_CONTROLS_LATER_PATH =
       path("api", "v1", POSTS_SEGMENT, REMOTE_CONTROLS_LATER_SLUG);
   private static final String SITE_SETTINGS_PATH = path("api", "v1", "settings", "site");
-  private static final String ADMIN_USERNAME = "admin";
-  private static final String ADMIN_PASSWORD = "change-me";
+  private static final String ADMIN_USERNAME = TestAdminCredentials.USERNAME;
+  private static final String ADMIN_PASSWORD = TestAdminCredentials.SECRET;
 
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
   private SessionHttpClient sessionHttpClient;
