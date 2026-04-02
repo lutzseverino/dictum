@@ -10,10 +10,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-@SuppressWarnings("java:S1192")
 public class SessionHttpClient {
 
-  @SuppressWarnings("java:S2068")
   private static final String SESSION_PASSWORD_FIELD = "password";
 
   private final HttpClient httpClient;
