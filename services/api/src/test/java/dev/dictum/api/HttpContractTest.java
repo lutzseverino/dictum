@@ -96,6 +96,18 @@ class HttpContractTest {
   }
 
   @Test
+  void unsafeProtectedEndpointsReturnUnauthenticatedProblemWhenNoSessionExists() throws Exception {
+    HttpResponse<String> response =
+        sessionHttpClient.patchWithoutCsrf(
+            REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, "{\"title\":\"No session\"}");
+
+    assertThat(response.statusCode()).isEqualTo(401);
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("code").asText()).isEqualTo("auth.unauthenticated");
+  }
+
+  @Test
   void listPostsReturnsPublishedSummaries() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.getAuthenticated(POSTS_PATH, ADMIN_USERNAME, ADMIN_PASSWORD);
