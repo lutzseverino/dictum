@@ -38,7 +38,7 @@ public class SiteSettingsController implements SiteSettingsApi {
 
   @Override
   public ResponseEntity<SiteSettingsResponse> updateSiteSettings(
-      UpdateSiteSettingsRequest updateSiteSettingsRequest) {
+      String xCsrfToken, UpdateSiteSettingsRequest updateSiteSettingsRequest) {
     return ResponseEntity.ok(
         siteSettingsApiMapper.toResponse(
             siteSettingsCommandService.update(

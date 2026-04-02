@@ -17,7 +17,10 @@ import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 class ContentStoreConfigurationTest {
 
   private final WebApplicationContextRunner contextRunner =
-      new WebApplicationContextRunner().withUserConfiguration(DictumApiApplication.class);
+      new WebApplicationContextRunner()
+          .withUserConfiguration(DictumApiApplication.class)
+          .withPropertyValues(
+              "dictum.auth.admin.username=admin", "dictum.auth.admin.password=change-me");
 
   @Test
   void filesystemModeRequiresContentRoot() {

@@ -1,14 +1,17 @@
 .openapi-generator-ignore
 apis/PostsApi.ts
+apis/SessionApi.ts
 apis/SiteSettingsApi.ts
 apis/index.ts
 index.ts
 models/CreatePostRequest.ts
+models/CreateSessionRequest.ts
 models/PostResponse.ts
 models/PostStatus.ts
 models/PostSummary.ts
 models/PostTemplate.ts
 models/ProblemDetails.ts
+models/SessionResponse.ts
 models/SiteSettingsResponse.ts
 models/UpdatePostRequest.ts
 models/UpdateSiteSettingsRequest.ts

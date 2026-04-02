@@ -2,6 +2,7 @@ package dev.dictum.api.web.error;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.dictum.api.auth.error.InvalidCredentialsException;
 import dev.dictum.api.content.error.InvalidPostRequestException;
 import dev.dictum.api.content.error.PostAlreadyExistsException;
 import dev.dictum.api.content.error.PostAlreadyPublishedException;
@@ -27,7 +28,7 @@ class ApiProblemHandlerTest {
 
   @BeforeEach
   void setUp() {
-    apiProblemHandler = new ApiProblemHandler();
+    apiProblemHandler = new ApiProblemHandler(new ApiProblemFactory());
     request = new MockHttpServletRequest("PATCH", POST_PATH);
   }
 
@@ -149,6 +150,22 @@ class ApiProblemHandlerTest {
         "request.invalid",
         Map.of(),
         400,
+        POST_PATH);
+  }
+
+  @Test
+  void handleInvalidCredentialsReturnsUnauthorizedProblemDetails() {
+    var response =
+        apiProblemHandler.handleInvalidCredentials(new InvalidCredentialsException(), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/invalid-credentials",
+        "Authentication failed",
+        "auth.invalid_credentials",
+        Map.of(),
+        401,
         POST_PATH);
   }
 

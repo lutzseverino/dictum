@@ -1,5 +1,6 @@
 package dev.dictum.api.web.error;
 
+import dev.dictum.api.auth.error.InvalidCredentialsException;
 import dev.dictum.api.content.error.PostAlreadyExistsException;
 import dev.dictum.api.content.error.PostAlreadyPublishedException;
 import dev.dictum.api.content.error.PostNotFoundException;
@@ -77,6 +78,38 @@ record ApiProblemSpec(
         problemType("bad-request"),
         "Bad request",
         "request.invalid",
+        Map.of());
+  }
+
+  static ApiProblemSpec invalidCredentials(InvalidCredentialsException exception) {
+    return new ApiProblemSpec(
+        HttpStatus.UNAUTHORIZED,
+        problemType("invalid-credentials"),
+        "Authentication failed",
+        "auth.invalid_credentials",
+        Map.of());
+  }
+
+  static ApiProblemSpec unauthenticated() {
+    return new ApiProblemSpec(
+        HttpStatus.UNAUTHORIZED,
+        problemType("unauthenticated"),
+        "Authentication required",
+        "auth.unauthenticated",
+        Map.of());
+  }
+
+  static ApiProblemSpec forbidden() {
+    return new ApiProblemSpec(
+        HttpStatus.FORBIDDEN, problemType("forbidden"), "Forbidden", "auth.forbidden", Map.of());
+  }
+
+  static ApiProblemSpec csrfInvalid() {
+    return new ApiProblemSpec(
+        HttpStatus.FORBIDDEN,
+        problemType("invalid-csrf-token"),
+        "Forbidden",
+        "request.csrf_invalid",
         Map.of());
   }
 

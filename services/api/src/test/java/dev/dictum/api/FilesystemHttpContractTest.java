@@ -6,11 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.support.FilesystemContentFixture;
+import dev.dictum.api.support.SessionHttpClient;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,13 +22,18 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"dictum.content.repository=filesystem"})
+    properties = {
+      "dictum.content.repository=filesystem",
+      "dictum.auth.admin.username=admin",
+      "dictum.auth.admin.password=change-me"
+    })
 class FilesystemHttpContractTest {
 
-  private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
   private static final Path CONTENT_ROOT = createContentRoot();
+  private static final String ADMIN_USERNAME = "admin";
+  private static final String ADMIN_PASSWORD = "change-me";
 
   static {
     FilesystemContentFixture.writeSeed(CONTENT_ROOT);
@@ -42,17 +45,19 @@ class FilesystemHttpContractTest {
   }
 
   private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+  private SessionHttpClient sessionHttpClient;
 
   @LocalServerPort private int port;
 
   @BeforeEach
   void setUp() {
     FilesystemContentFixture.writeSeed(CONTENT_ROOT);
+    sessionHttpClient = new SessionHttpClient("http://localhost:" + port, objectMapper);
   }
 
   @Test
   void listPostsReadsSeededFilesystemContent() throws Exception {
-    HttpResponse<String> response = get("/api/v1/posts");
+    HttpResponse<String> response = authenticatedGet("/api/v1/posts");
 
     assertThat(response.statusCode()).isEqualTo(200);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -66,7 +71,7 @@ class FilesystemHttpContractTest {
   @Test
   void updateSiteSettingsWorksAgainstFilesystemPersistence() throws Exception {
     HttpResponse<String> response =
-        request(
+        authenticatedPatch(
             "PATCH",
             "/api/v1/settings/site",
             MERGE_PATCH_JSON,
@@ -85,27 +90,17 @@ class FilesystemHttpContractTest {
     assertThat(settings.getMotd()).isEqualTo("Filesystem-backed control plane wiring is live.");
   }
 
-  private HttpResponse<String> get(String path) throws IOException, InterruptedException {
-    return request("GET", path, null, null);
+  private HttpResponse<String> authenticatedGet(String path)
+      throws IOException, InterruptedException {
+    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
+    return sessionHttpClient.get(path);
   }
 
-  private HttpResponse<String> request(String method, String path, String contentType, String body)
+  private HttpResponse<String> authenticatedPatch(
+      String method, String path, String contentType, String body)
       throws IOException, InterruptedException {
-    HttpRequest.Builder builder =
-        HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + path));
-
-    if (contentType != null) {
-      builder.header("Content-Type", contentType);
-    }
-
-    HttpRequest request;
-    if ("PATCH".equals(method)) {
-      request = builder.method("PATCH", HttpRequest.BodyPublishers.ofString(body)).build();
-    } else {
-      request = builder.GET().build();
-    }
-
-    return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
+    return sessionHttpClient.request(method, path, contentType, body, true);
   }
 
   private static Path createContentRoot() {
