@@ -8,6 +8,7 @@ import dev.dictum.api.generated.model.PostResponse;
 import dev.dictum.api.generated.model.SessionResponse;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.support.SessionHttpClient;
+import dev.dictum.api.support.SessionHttpClient.HttpMethod;
 import java.net.http.HttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,16 +25,22 @@ import org.springframework.test.annotation.DirtiesContext;
       "dictum.auth.admin.password=change-me"
     })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@SuppressWarnings("java:S2068")
 class HttpContractTest {
 
   private static final String CONTENT_TYPE_HEADER = "content-type";
   private static final String MERGE_PATCH_JSON = "application/merge-patch+json";
+  private static final String PARAMS_FIELD = "params";
   private static final String POSTS_SEGMENT = "posts";
   private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String REMOTE_CONTROLS_LATER_SLUG = "remote-controls-later";
+  private static final String UNKNOWN_SLUG = "unknown-slug";
+  private static final String ADMIN_TAG = "admin";
+  private static final String API_TAG = "api";
   private static final String SESSION_PATH = path("api", "v1", "session");
   private static final String POSTS_PATH = path("api", "v1", POSTS_SEGMENT);
   private static final String REMOTE_CONTROLS_LATER_PATH =
-      path("api", "v1", POSTS_SEGMENT, "remote-controls-later");
+      path("api", "v1", POSTS_SEGMENT, REMOTE_CONTROLS_LATER_SLUG);
   private static final String SITE_SETTINGS_PATH = path("api", "v1", "settings", "site");
   private static final String ADMIN_USERNAME = "admin";
   private static final String ADMIN_PASSWORD = "change-me";
@@ -103,7 +110,7 @@ class HttpContractTest {
     assertThat(posts).hasSize(2);
     assertThat(posts.get(0).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
     assertThat(posts.get(0).get("status").asText()).isEqualTo("published");
-    assertThat(posts.get(1).get("slug").asText()).isEqualTo("remote-controls-later");
+    assertThat(posts.get(1).get("slug").asText()).isEqualTo(REMOTE_CONTROLS_LATER_SLUG);
   }
 
   @Test
@@ -124,7 +131,7 @@ class HttpContractTest {
   void getPostReturnsProblemDetailsForUnknownSlug() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.getAuthenticated(
-            path("api", "v1", POSTS_SEGMENT, "unknown-slug"), ADMIN_USERNAME, ADMIN_PASSWORD);
+            path("api", "v1", POSTS_SEGMENT, UNKNOWN_SLUG), ADMIN_USERNAME, ADMIN_PASSWORD);
 
     assertThat(response.statusCode()).isEqualTo(404);
     assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
@@ -136,7 +143,7 @@ class HttpContractTest {
         .isEqualTo("https://dictum.dev/problems/post-not-found");
     assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
     assertThat(problem.get("code").asText()).isEqualTo("post.not_found");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo("unknown-slug");
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(UNKNOWN_SLUG);
     assertThat(problem.get("status").asInt()).isEqualTo(404);
   }
 
@@ -144,7 +151,7 @@ class HttpContractTest {
   void createPostReturnsCreatedResourceAndLocationHeader() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "POST",
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -173,7 +180,7 @@ class HttpContractTest {
   void createPostRejectsUnknownRequestFields() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "POST",
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -203,7 +210,7 @@ class HttpContractTest {
   void createPostReturnsConflictProblemDetailsWhenSlugAlreadyExists() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "POST",
+            HttpMethod.POST,
             POSTS_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             """
@@ -225,14 +232,14 @@ class HttpContractTest {
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/post-already-exists");
     assertThat(problem.get("code").asText()).isEqualTo("post.already_exists");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test
   void updatePostAppliesMergePatchThroughTheHttpSurface() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "PATCH",
+            HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MERGE_PATCH_JSON,
             """
@@ -250,14 +257,14 @@ class HttpContractTest {
     assertThat(post.getTitle()).isEqualTo("Remote Controls, Sooner");
     assertThat(post.getExcerpt())
         .isEqualTo("The admin experience will later own publish and settings mutations.");
-    assertThat(post.getTags()).containsExactly("admin", "api");
+    assertThat(post.getTags()).containsExactly(ADMIN_TAG, API_TAG);
   }
 
   @Test
   void updatePostRejectsWrongMediaType() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "PATCH",
+            HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MediaType.APPLICATION_JSON_VALUE,
             "{\"title\":\"Wrong media type\"}",
@@ -280,7 +287,7 @@ class HttpContractTest {
 
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "PATCH",
+            HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MERGE_PATCH_JSON,
             payload,
@@ -298,7 +305,7 @@ class HttpContractTest {
   void publishPostTransitionsTheDraftToPublished() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "POST",
+            HttpMethod.POST,
             REMOTE_CONTROLS_LATER_PATH + "/publish",
             null,
             null,
@@ -316,7 +323,7 @@ class HttpContractTest {
   void publishPostReturnsConflictProblemDetailsWhenAlreadyPublished() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "POST",
+            HttpMethod.POST,
             path("api", "v1", POSTS_SEGMENT, DICTUM_BEGINS_SLUG, "publish"),
             null,
             null,
@@ -329,7 +336,7 @@ class HttpContractTest {
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/post-already-published");
     assertThat(problem.get("code").asText()).isEqualTo("post.already_published");
-    assertThat(problem.get("params").get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
+    assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
   }
 
   @Test
@@ -349,7 +356,7 @@ class HttpContractTest {
   void updateSiteSettingsReturnsTheUpdatedRepresentation() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "PATCH",
+            HttpMethod.PATCH,
             SITE_SETTINGS_PATH,
             MERGE_PATCH_JSON,
             """
@@ -375,12 +382,8 @@ class HttpContractTest {
     sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
 
     HttpResponse<String> response =
-        sessionHttpClient.request(
-            "PATCH",
-            REMOTE_CONTROLS_LATER_PATH,
-            MERGE_PATCH_JSON,
-            "{\"title\":\"No CSRF\"}",
-            false);
+        sessionHttpClient.patchWithoutCsrf(
+            REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, "{\"title\":\"No CSRF\"}");
 
     assertThat(response.statusCode()).isEqualTo(403);
 

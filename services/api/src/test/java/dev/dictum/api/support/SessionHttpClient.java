@@ -10,7 +10,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@SuppressWarnings("java:S1192")
 public class SessionHttpClient {
+
+  @SuppressWarnings("java:S2068")
+  private static final String SESSION_PASSWORD_FIELD = "password";
 
   private final HttpClient httpClient;
   private final ObjectMapper objectMapper;
@@ -30,16 +34,16 @@ public class SessionHttpClient {
       throws IOException, InterruptedException {
     HttpResponse<String> response =
         request(
-            "POST",
+            HttpMethod.POST,
             "/api/v1/session",
             "application/json",
             """
             {
               "username": "%s",
-              "password": "%s"
+              "%s": "%s"
             }
             """
-                .formatted(username, password),
+                .formatted(username, SESSION_PASSWORD_FIELD, password),
             false);
 
     if (response.statusCode() == 200) {
@@ -56,32 +60,42 @@ public class SessionHttpClient {
   }
 
   public HttpResponse<String> get(String path) throws IOException, InterruptedException {
-    return request("GET", path, null, null, false);
+    return request(HttpMethod.GET, path, null, null, false);
   }
 
   public HttpResponse<String> post(String path, String contentType, String body)
       throws IOException, InterruptedException {
-    return request("POST", path, contentType, body, true);
+    return request(HttpMethod.POST, path, contentType, body, true);
   }
 
   public HttpResponse<String> patch(String path, String contentType, String body)
       throws IOException, InterruptedException {
-    return request("PATCH", path, contentType, body, true);
+    return request(HttpMethod.PATCH, path, contentType, body, true);
+  }
+
+  public HttpResponse<String> patchWithoutCsrf(String path, String contentType, String body)
+      throws IOException, InterruptedException {
+    return request(HttpMethod.PATCH, path, contentType, body, false);
   }
 
   public HttpResponse<String> delete(String path) throws IOException, InterruptedException {
-    return request("DELETE", path, null, null, true);
+    return request(HttpMethod.DELETE, path, null, null, true);
   }
 
   public HttpResponse<String> requestAuthenticated(
-      String method, String path, String contentType, String body, String username, String password)
+      HttpMethod method,
+      String path,
+      String contentType,
+      String body,
+      String username,
+      String password)
       throws IOException, InterruptedException {
     createSession(username, password);
     return request(method, path, contentType, body, true);
   }
 
   public HttpResponse<String> request(
-      String method, String path, String contentType, String body, boolean includeCsrfToken)
+      HttpMethod method, String path, String contentType, String body, boolean includeCsrfToken)
       throws IOException, InterruptedException {
     HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(baseUrl + path));
 
@@ -95,25 +109,38 @@ public class SessionHttpClient {
 
     HttpRequest request =
         switch (method) {
-          case "POST" ->
+          case POST ->
               builder
                   .POST(
                       body == null
                           ? HttpRequest.BodyPublishers.noBody()
                           : HttpRequest.BodyPublishers.ofString(body))
                   .build();
-          case "PATCH" ->
+          case PATCH ->
               builder
                   .method(
-                      "PATCH",
+                      method.value,
                       body == null
                           ? HttpRequest.BodyPublishers.noBody()
                           : HttpRequest.BodyPublishers.ofString(body))
                   .build();
-          case "DELETE" -> builder.DELETE().build();
+          case DELETE -> builder.DELETE().build();
           default -> builder.GET().build();
         };
 
     return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+  }
+
+  public enum HttpMethod {
+    GET("GET"),
+    POST("POST"),
+    PATCH("PATCH"),
+    DELETE("DELETE");
+
+    private final String value;
+
+    HttpMethod(String value) {
+      this.value = value;
+    }
   }
 }

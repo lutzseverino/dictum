@@ -21,7 +21,8 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 class ApiProblemHandlerTest {
 
   private static final String BAD_REQUEST_TITLE = "Bad request";
-  private static final String POST_PATH = path("api", "v1", "posts", "dictum-begins");
+  private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
+  private static final String POST_PATH = path("api", "v1", "posts", DICTUM_BEGINS_SLUG);
 
   private ApiProblemHandler apiProblemHandler;
   private MockHttpServletRequest request;
@@ -54,7 +55,7 @@ class ApiProblemHandlerTest {
   void handlePostAlreadyExistsReturnsConflictProblemDetails() {
     var response =
         apiProblemHandler.handlePostAlreadyExists(
-            new PostAlreadyExistsException("dictum-begins"), request);
+            new PostAlreadyExistsException(DICTUM_BEGINS_SLUG), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     assertProblem(
@@ -62,7 +63,7 @@ class ApiProblemHandlerTest {
         "https://dictum.dev/problems/post-already-exists",
         "Conflict",
         "post.already_exists",
-        Map.of("slug", "dictum-begins"),
+        Map.of("slug", DICTUM_BEGINS_SLUG),
         409,
         POST_PATH);
   }
@@ -71,7 +72,7 @@ class ApiProblemHandlerTest {
   void handlePostAlreadyPublishedReturnsConflictProblemDetails() {
     var response =
         apiProblemHandler.handlePostAlreadyPublished(
-            new PostAlreadyPublishedException("dictum-begins"), request);
+            new PostAlreadyPublishedException(DICTUM_BEGINS_SLUG), request);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     assertProblem(
@@ -79,7 +80,7 @@ class ApiProblemHandlerTest {
         "https://dictum.dev/problems/post-already-published",
         "Conflict",
         "post.already_published",
-        Map.of("slug", "dictum-begins"),
+        Map.of("slug", DICTUM_BEGINS_SLUG),
         409,
         POST_PATH);
   }

@@ -12,6 +12,12 @@ import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 class AuthConfigurationTest {
 
+  @SuppressWarnings("java:S2068")
+  private static final String ADMIN_USERNAME_PROPERTY = "dictum.auth.admin.username=admin";
+
+  @SuppressWarnings("java:S2068")
+  private static final String ADMIN_PASSWORD_PROPERTY = "dictum.auth.admin.password=change-me";
+
   private final WebApplicationContextRunner contextRunner =
       new WebApplicationContextRunner().withUserConfiguration(DictumApiApplication.class);
 
@@ -34,8 +40,8 @@ class AuthConfigurationTest {
 
     contextRunner
         .withPropertyValues(
-            "dictum.auth.admin.username=admin",
-            "dictum.auth.admin.password=change-me",
+            ADMIN_USERNAME_PROPERTY,
+            ADMIN_PASSWORD_PROPERTY,
             "dictum.content.repository=filesystem",
             "dictum.content.root=" + contentRoot)
         .run(context -> assertThat(context).hasNotFailed());

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.dictum.api.generated.model.SiteSettingsResponse;
 import dev.dictum.api.support.FilesystemContentFixture;
 import dev.dictum.api.support.SessionHttpClient;
+import dev.dictum.api.support.SessionHttpClient.HttpMethod;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.http.HttpResponse;
@@ -27,6 +28,7 @@ import org.springframework.test.context.DynamicPropertySource;
       "dictum.auth.admin.username=admin",
       "dictum.auth.admin.password=change-me"
     })
+@SuppressWarnings("java:S2068")
 class FilesystemHttpContractTest {
 
   private static final String CONTENT_TYPE_HEADER = "content-type";
@@ -73,7 +75,7 @@ class FilesystemHttpContractTest {
   void updateSiteSettingsWorksAgainstFilesystemPersistence() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
-            "PATCH",
+            HttpMethod.PATCH,
             "/api/v1/settings/site",
             MERGE_PATCH_JSON,
             """
