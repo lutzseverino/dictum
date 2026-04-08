@@ -1,6 +1,5 @@
 package dev.dictum.api.web.error;
 
-import dev.dictum.api.auth.error.InvalidCredentialsException;
 import dev.dictum.api.content.error.PostAlreadyExistsException;
 import dev.dictum.api.content.error.PostAlreadyPublishedException;
 import dev.dictum.api.content.error.PostNotFoundException;
@@ -9,12 +8,11 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 record ApiProblemSpec(
     HttpStatus status, String type, String title, String code, Map<String, Object> params) {
 
+  private static final String BAD_REQUEST_TITLE = "Bad request";
   private static final String PROBLEM_BASE_URL = "https://dictum.dev/problems/";
 
   ApiProblemSpec {
@@ -52,7 +50,7 @@ record ApiProblemSpec(
     return new ApiProblemSpec(
         HttpStatus.BAD_REQUEST,
         problemType("invalid-patch-request"),
-        "Bad request",
+        BAD_REQUEST_TITLE,
         "patch.invalid",
         Map.of());
   }
@@ -61,7 +59,7 @@ record ApiProblemSpec(
     return new ApiProblemSpec(
         HttpStatus.BAD_REQUEST,
         problemType("invalid-post-request"),
-        "Bad request",
+        BAD_REQUEST_TITLE,
         "post.invalid",
         Map.of());
   }
@@ -79,7 +77,7 @@ record ApiProblemSpec(
     return new ApiProblemSpec(
         HttpStatus.BAD_REQUEST,
         problemType("bad-request"),
-        "Bad request",
+        BAD_REQUEST_TITLE,
         "request.invalid",
         Map.of());
   }
@@ -93,14 +91,6 @@ record ApiProblemSpec(
         Map.of());
   }
 
-  static ApiProblemSpec requestNotFound(NoResourceFoundException exception) {
-    return requestNotFound();
-  }
-
-  static ApiProblemSpec requestNotFound(NoHandlerFoundException exception) {
-    return requestNotFound();
-  }
-
   static ApiProblemSpec methodNotAllowed(HttpRequestMethodNotSupportedException exception) {
     return new ApiProblemSpec(
         HttpStatus.METHOD_NOT_ALLOWED,
@@ -110,7 +100,7 @@ record ApiProblemSpec(
         exception.getMethod() == null ? Map.of() : Map.of("method", exception.getMethod()));
   }
 
-  static ApiProblemSpec invalidCredentials(InvalidCredentialsException exception) {
+  static ApiProblemSpec invalidCredentials() {
     return new ApiProblemSpec(
         HttpStatus.UNAUTHORIZED,
         problemType("invalid-credentials"),

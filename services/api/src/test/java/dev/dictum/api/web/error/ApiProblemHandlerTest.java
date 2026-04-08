@@ -27,6 +27,7 @@ class ApiProblemHandlerTest {
   private static final String BAD_REQUEST_TITLE = "Bad request";
   private static final String DICTUM_BEGINS_SLUG = "dictum-begins";
   private static final String POST_PATH = path("api", "v1", "posts", DICTUM_BEGINS_SLUG);
+  private static final String RESOURCE_NOT_FOUND_TITLE = "Resource not found";
 
   private ApiProblemHandler apiProblemHandler;
   private MockHttpServletRequest request;
@@ -48,7 +49,7 @@ class ApiProblemHandlerTest {
     assertProblem(
         response.getBody(),
         "https://dictum.dev/problems/post-not-found",
-        "Resource not found",
+        RESOURCE_NOT_FOUND_TITLE,
         "post.not_found",
         Map.of("slug", "unknown-slug"),
         404,
@@ -168,7 +169,7 @@ class ApiProblemHandlerTest {
     assertProblem(
         response.getBody(),
         "https://dictum.dev/problems/request-not-found",
-        "Resource not found",
+        RESOURCE_NOT_FOUND_TITLE,
         "request.not_found",
         Map.of(),
         404,
@@ -187,7 +188,7 @@ class ApiProblemHandlerTest {
     assertProblem(
         response.getBody(),
         "https://dictum.dev/problems/request-not-found",
-        "Resource not found",
+        RESOURCE_NOT_FOUND_TITLE,
         "request.not_found",
         Map.of(),
         404,

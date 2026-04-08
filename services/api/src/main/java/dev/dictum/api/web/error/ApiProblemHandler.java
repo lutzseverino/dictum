@@ -75,17 +75,7 @@ public class ApiProblemHandler {
   @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
   public ResponseEntity<ProblemDetails> handleRequestNotFound(
       Exception exception, HttpServletRequest request) {
-    ApiProblemSpec spec =
-        switch (exception) {
-          case NoHandlerFoundException noHandlerFound ->
-              ApiProblemSpec.requestNotFound(noHandlerFound);
-          case NoResourceFoundException noResourceFound ->
-              ApiProblemSpec.requestNotFound(noResourceFound);
-          default ->
-              throw new IllegalArgumentException("Unsupported not-found exception: " + exception);
-        };
-
-    return problem(spec, exception.getMessage(), request);
+    return problem(ApiProblemSpec.requestNotFound(), exception.getMessage(), request);
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -97,7 +87,7 @@ public class ApiProblemHandler {
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ProblemDetails> handleInvalidCredentials(
       InvalidCredentialsException exception, HttpServletRequest request) {
-    return problem(ApiProblemSpec.invalidCredentials(exception), exception.getMessage(), request);
+    return problem(ApiProblemSpec.invalidCredentials(), exception.getMessage(), request);
   }
 
   private ResponseEntity<ProblemDetails> problem(

@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 
 class PostsHttpContractTest extends InMemoryHttpContractSupport {
 
+  private static final String STATUS_FIELD = "status";
+  private static final String TITLE_FIELD = "title";
+
   @Test
   void protectedEndpointsRejectUnauthenticatedRequests() throws Exception {
     HttpResponse<String> response = sessionHttpClient.get(POSTS_PATH);
@@ -26,7 +29,9 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
   void unsafeProtectedEndpointsReturnUnauthenticatedProblemWhenNoSessionExists() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.patchWithoutCsrf(
-            REMOTE_CONTROLS_LATER_PATH, MERGE_PATCH_JSON, "{\"title\":\"No session\"}");
+            REMOTE_CONTROLS_LATER_PATH,
+            MERGE_PATCH_JSON,
+            "{\"%s\":\"No session\"}".formatted(TITLE_FIELD));
 
     assertThat(response.statusCode()).isEqualTo(401);
 
@@ -48,7 +53,7 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
     assertThat(posts.isArray()).isTrue();
     assertThat(posts).hasSize(2);
     assertThat(posts.get(0).get("slug").asText()).isEqualTo(DICTUM_BEGINS_SLUG);
-    assertThat(posts.get(0).get("status").asText()).isEqualTo("published");
+    assertThat(posts.get(0).get(STATUS_FIELD).asText()).isEqualTo("published");
     assertThat(posts.get(1).get("slug").asText()).isEqualTo(REMOTE_CONTROLS_LATER_SLUG);
   }
 
@@ -80,10 +85,10 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
     JsonNode problem = objectMapper.readTree(response.body());
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/post-not-found");
-    assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
+    assertThat(problem.get(TITLE_FIELD).asText()).isEqualTo("Resource not found");
     assertThat(problem.get("code").asText()).isEqualTo("post.not_found");
     assertThat(problem.get(PARAMS_FIELD).get("slug").asText()).isEqualTo(UNKNOWN_SLUG);
-    assertThat(problem.get("status").asInt()).isEqualTo(404);
+    assertThat(problem.get(STATUS_FIELD).asInt()).isEqualTo(404);
   }
 
   @Test
@@ -99,10 +104,10 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
     JsonNode problem = objectMapper.readTree(response.body());
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/request-not-found");
-    assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
+    assertThat(problem.get(TITLE_FIELD).asText()).isEqualTo("Resource not found");
     assertThat(problem.get("code").asText()).isEqualTo("request.not_found");
     assertThat(problem.get(PARAMS_FIELD).isEmpty()).isTrue();
-    assertThat(problem.get("status").asInt()).isEqualTo(404);
+    assertThat(problem.get(STATUS_FIELD).asInt()).isEqualTo(404);
   }
 
   @Test
@@ -114,7 +119,7 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
             HttpMethod.PUT,
             REMOTE_CONTROLS_LATER_PATH,
             MediaType.APPLICATION_JSON_VALUE,
-            "{\"title\":\"Wrong method\"}",
+            "{\"%s\":\"Wrong method\"}".formatted(TITLE_FIELD),
             true);
 
     assertThat(response.statusCode()).isEqualTo(405);
@@ -125,10 +130,10 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
     JsonNode problem = objectMapper.readTree(response.body());
     assertThat(problem.get("type").asText())
         .isEqualTo("https://dictum.dev/problems/method-not-allowed");
-    assertThat(problem.get("title").asText()).isEqualTo("Method not allowed");
+    assertThat(problem.get(TITLE_FIELD).asText()).isEqualTo("Method not allowed");
     assertThat(problem.get("code").asText()).isEqualTo("request.method_not_allowed");
     assertThat(problem.get(PARAMS_FIELD).get("method").asText()).isEqualTo("PUT");
-    assertThat(problem.get("status").asInt()).isEqualTo(405);
+    assertThat(problem.get(STATUS_FIELD).asInt()).isEqualTo(405);
   }
 
   @Test
@@ -251,7 +256,7 @@ class PostsHttpContractTest extends InMemoryHttpContractSupport {
             HttpMethod.PATCH,
             REMOTE_CONTROLS_LATER_PATH,
             MediaType.APPLICATION_JSON_VALUE,
-            "{\"title\":\"Wrong media type\"}",
+            "{\"%s\":\"Wrong media type\"}".formatted(TITLE_FIELD),
             ADMIN_USERNAME,
             ADMIN_PASSWORD);
 
