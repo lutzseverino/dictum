@@ -8,6 +8,9 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 record ApiProblemSpec(
     HttpStatus status, String type, String title, String code, Map<String, Object> params) {
@@ -79,6 +82,32 @@ record ApiProblemSpec(
         "Bad request",
         "request.invalid",
         Map.of());
+  }
+
+  static ApiProblemSpec requestNotFound() {
+    return new ApiProblemSpec(
+        HttpStatus.NOT_FOUND,
+        problemType("request-not-found"),
+        "Resource not found",
+        "request.not_found",
+        Map.of());
+  }
+
+  static ApiProblemSpec requestNotFound(NoResourceFoundException exception) {
+    return requestNotFound();
+  }
+
+  static ApiProblemSpec requestNotFound(NoHandlerFoundException exception) {
+    return requestNotFound();
+  }
+
+  static ApiProblemSpec methodNotAllowed(HttpRequestMethodNotSupportedException exception) {
+    return new ApiProblemSpec(
+        HttpStatus.METHOD_NOT_ALLOWED,
+        problemType("method-not-allowed"),
+        "Method not allowed",
+        "request.method_not_allowed",
+        exception.getMethod() == null ? Map.of() : Map.of("method", exception.getMethod()));
   }
 
   static ApiProblemSpec invalidCredentials(InvalidCredentialsException exception) {

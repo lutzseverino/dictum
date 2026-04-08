@@ -82,6 +82,11 @@ public class SessionHttpClient {
     return request(HttpMethod.DELETE, path, null, null, true);
   }
 
+  public HttpResponse<String> put(String path, String contentType, String body)
+      throws IOException, InterruptedException {
+    return request(HttpMethod.PUT, path, contentType, body, true);
+  }
+
   public HttpResponse<String> requestAuthenticated(
       HttpMethod method,
       String path,
@@ -124,6 +129,13 @@ public class SessionHttpClient {
                           ? HttpRequest.BodyPublishers.noBody()
                           : HttpRequest.BodyPublishers.ofString(body))
                   .build();
+          case PUT ->
+              builder
+                  .PUT(
+                      body == null
+                          ? HttpRequest.BodyPublishers.noBody()
+                          : HttpRequest.BodyPublishers.ofString(body))
+                  .build();
           case DELETE -> builder.DELETE().build();
           default -> builder.GET().build();
         };
@@ -135,6 +147,7 @@ public class SessionHttpClient {
     GET("GET"),
     POST("POST"),
     PATCH("PATCH"),
+    PUT("PUT"),
     DELETE("DELETE");
 
     private final String value;

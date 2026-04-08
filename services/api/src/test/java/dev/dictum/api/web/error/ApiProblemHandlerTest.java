@@ -12,11 +12,15 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 class ApiProblemHandlerTest {
 
@@ -151,6 +155,59 @@ class ApiProblemHandlerTest {
         "request.invalid",
         Map.of(),
         400,
+        POST_PATH);
+  }
+
+  @Test
+  void handleRequestNotFoundReturnsNotFoundProblemDetailsForMissingRoute() {
+    var response =
+        apiProblemHandler.handleRequestNotFound(
+            new NoHandlerFoundException("GET", "/api/v1/missing", null), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/request-not-found",
+        "Resource not found",
+        "request.not_found",
+        Map.of(),
+        404,
+        POST_PATH);
+  }
+
+  @Test
+  void handleRequestNotFoundReturnsNotFoundProblemDetailsForMissingStaticResource() {
+    var response =
+        apiProblemHandler.handleRequestNotFound(
+            new NoResourceFoundException(
+                HttpMethod.GET, "/api/v1/missing", "No static resource found"),
+            request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/request-not-found",
+        "Resource not found",
+        "request.not_found",
+        Map.of(),
+        404,
+        POST_PATH);
+  }
+
+  @Test
+  void handleMethodNotAllowedReturnsProblemDetails() {
+    var response =
+        apiProblemHandler.handleMethodNotAllowed(
+            new HttpRequestMethodNotSupportedException("PUT"), request);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+    assertProblem(
+        response.getBody(),
+        "https://dictum.dev/problems/method-not-allowed",
+        "Method not allowed",
+        "request.method_not_allowed",
+        Map.of("method", "PUT"),
+        405,
         POST_PATH);
   }
 

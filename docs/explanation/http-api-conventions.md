@@ -3,7 +3,7 @@ title: HTTP API Conventions
 status: accepted
 author: Codex
 created: 2026-03-13
-updated: 2026-04-01
+updated: 2026-04-08
 owner: Engineering
 doc-type: explanation
 summary: Explain the conventional REST and OpenAPI rules used for Dictum control-plane endpoints.
@@ -58,6 +58,47 @@ Use Problem Details for HTTP APIs.
 - Dictum extends Problem Details with a stable `code` and structured `params`.
 - Backend code owns `type`, `code`, `params`, and fallback problem text.
 - Frontend code should render user-facing API errors from `code` and `params`.
+
+#### Problem Field Semantics
+
+- `title` is a coarse generic problem label.
+- `detail` is fallback or diagnostic text and not primary UX copy.
+- `code` is the stable machine-readable client key.
+- `params` contains stable interpolation values only.
+
+#### Problem Code Taxonomy
+
+Problem codes should follow `domain.reason`.
+
+Examples:
+
+- `post.not_found`
+- `post.already_exists`
+- `auth.unauthenticated`
+- `request.invalid`
+- `request.method_not_allowed`
+
+The code should stay stable even when fallback text changes.
+
+#### Problem Params
+
+Use `params` only for stable structured values that clients can safely interpolate.
+
+Good examples:
+
+- `slug`
+- `field`
+- `contentType`
+- `method`
+
+Do not put prose, rendered sentences, or localization-oriented copy into `params`.
+
+#### Client Rendering Contract
+
+- Clients should localize API-originated messages from `code`.
+- Clients should interpolate those messages with `params`.
+- Clients should not rely on `title` or `detail` for localization logic.
+- `detail` is intended for fallback and debugging rather than primary user-facing copy.
 
 ### Authentication
 

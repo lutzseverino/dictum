@@ -20,42 +20,43 @@ import { mapValues } from '../runtime';
  */
 export interface ProblemDetails {
     /**
-     * 
+     * Canonical semantic identifier for the problem type.
      * @type {string}
      * @memberof ProblemDetails
      */
     type?: string;
     /**
-     * 
+     * Coarse generic problem label.
      * @type {string}
      * @memberof ProblemDetails
      */
     title: string;
     /**
-     * 
+     * HTTP status code associated with the problem.
      * @type {number}
      * @memberof ProblemDetails
      */
     status: number;
     /**
-     * 
+     * Fallback or diagnostic text for logs, debugging, or non-localized clients.
      * @type {string}
      * @memberof ProblemDetails
      */
     detail?: string;
     /**
-     * 
+     * Request-local identifier for the failing resource or route.
      * @type {string}
      * @memberof ProblemDetails
      */
     instance?: string;
     /**
-     * Stable machine-readable problem code for client handling and localization.
+     * Stable machine-readable problem code following the `domain.reason` convention.
      * @type {string}
      * @memberof ProblemDetails
      */
     code: string;
     /**
+     * Stable structured interpolation values such as `slug`, `field`, `contentType`, or `method`. Do not place prose or localized copy in this object.
      * 
      * @type {object}
      * @memberof ProblemDetails

@@ -68,6 +68,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SessionResponse"
+        "400":
+          $ref: "#/components/responses/ProblemResponse"
         "401":
           $ref: "#/components/responses/ProblemResponse"
         default:
@@ -132,6 +134,8 @@ paths:
                         - admin
                         - control-plane
                       hasStylesheet: false
+        "401":
+          $ref: "#/components/responses/ProblemResponse"
         default:
           $ref: "#/components/responses/ProblemResponse"
     post:
@@ -177,6 +181,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PostResponse"
+        "400":
+          $ref: "#/components/responses/ProblemResponse"
         "401":
           $ref: "#/components/responses/ProblemResponse"
         "409":
@@ -260,6 +266,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PostResponse"
+        "400":
+          $ref: "#/components/responses/ProblemResponse"
         "401":
           $ref: "#/components/responses/ProblemResponse"
         "403":
@@ -354,6 +362,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SiteSettingsResponse"
+        "400":
+          $ref: "#/components/responses/ProblemResponse"
         "401":
           $ref: "#/components/responses/ProblemResponse"
         "403":
@@ -396,6 +406,34 @@ components:
                 params:
                   slug: remote-controls-later
                 detail: No post exists for slug remote-controls-later
+                instance: /api/v1/posts/remote-controls-later
+            unauthenticated:
+              value:
+                type: https://dictum.dev/problems/unauthenticated
+                title: Authentication required
+                status: 401
+                code: auth.unauthenticated
+                params: {}
+                detail: Authentication is required to access this resource.
+                instance: /api/v1/posts
+            invalidRequest:
+              value:
+                type: https://dictum.dev/problems/bad-request
+                title: Bad request
+                status: 400
+                code: request.invalid
+                params: {}
+                detail: "JSON parse error: Unexpected character"
+                instance: /api/v1/posts
+            methodNotAllowed:
+              value:
+                type: https://dictum.dev/problems/method-not-allowed
+                title: Method not allowed
+                status: 405
+                code: request.method_not_allowed
+                params:
+                  method: PUT
+                detail: Request method 'PUT' is not supported.
                 instance: /api/v1/posts/remote-controls-later
   schemas:
     CreateSessionRequest:
@@ -597,26 +635,34 @@ components:
         type:
           type: string
           format: uri-reference
+          description: Canonical semantic identifier for the problem type.
         title:
           type: string
+          description: Coarse generic problem label.
         status:
           type: integer
           minimum: 100
           maximum: 599
+          description: HTTP status code associated with the problem.
         detail:
           type: string
+          description: Fallback or diagnostic text for logs, debugging, or non-localized clients.
         instance:
           type: string
           format: uri-reference
+          description: Request-local identifier for the failing resource or route.
         code:
           type: string
-          description: Stable machine-readable problem code for client handling and localization.
+          description: Stable machine-readable problem code following the `domain.reason` convention.
         params:
           $ref: "#/components/schemas/ProblemParams"
           description: Structured interpolation values associated with the problem code.
     ProblemParams:
       type: object
       additionalProperties: true
+      description: >
+        Stable structured interpolation values such as `slug`, `field`, `contentType`, or
+        `method`. Do not place prose or localized copy in this object.
   securitySchemes:
     SessionCookieAuth:
       type: apiKey

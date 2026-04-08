@@ -160,6 +160,51 @@ class HttpContractTest {
   }
 
   @Test
+  void missingApiRouteReturnsProblemDetails() throws Exception {
+    HttpResponse<String> response =
+        sessionHttpClient.getAuthenticated("/api/v1/missing", ADMIN_USERNAME, ADMIN_PASSWORD);
+
+    assertThat(response.statusCode()).isEqualTo(404);
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("type").asText())
+        .isEqualTo("https://dictum.dev/problems/request-not-found");
+    assertThat(problem.get("title").asText()).isEqualTo("Resource not found");
+    assertThat(problem.get("code").asText()).isEqualTo("request.not_found");
+    assertThat(problem.get(PARAMS_FIELD).isEmpty()).isTrue();
+    assertThat(problem.get("status").asInt()).isEqualTo(404);
+  }
+
+  @Test
+  void unsupportedMethodReturnsProblemDetails() throws Exception {
+    sessionHttpClient.createSession(ADMIN_USERNAME, ADMIN_PASSWORD);
+
+    HttpResponse<String> response =
+        sessionHttpClient.request(
+            HttpMethod.PUT,
+            REMOTE_CONTROLS_LATER_PATH,
+            MediaType.APPLICATION_JSON_VALUE,
+            "{\"title\":\"Wrong method\"}",
+            true);
+
+    assertThat(response.statusCode()).isEqualTo(405);
+    assertThat(response.headers().firstValue(CONTENT_TYPE_HEADER))
+        .hasValueSatisfying(
+            value -> assertThat(value).contains(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+    JsonNode problem = objectMapper.readTree(response.body());
+    assertThat(problem.get("type").asText())
+        .isEqualTo("https://dictum.dev/problems/method-not-allowed");
+    assertThat(problem.get("title").asText()).isEqualTo("Method not allowed");
+    assertThat(problem.get("code").asText()).isEqualTo("request.method_not_allowed");
+    assertThat(problem.get(PARAMS_FIELD).get("method").asText()).isEqualTo("PUT");
+    assertThat(problem.get("status").asInt()).isEqualTo(405);
+  }
+
+  @Test
   void createPostReturnsCreatedResourceAndLocationHeader() throws Exception {
     HttpResponse<String> response =
         sessionHttpClient.requestAuthenticated(
